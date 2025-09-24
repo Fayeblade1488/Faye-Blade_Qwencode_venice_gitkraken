@@ -1,0 +1,76 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.gitattributes
+.next
+.pytest_cache/
+.hypothesis/
+.vscode/
+
+# Environment
+.env
+.env.local
+.env.backup
+.venv/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Secrets
+secrets.json
+*.key
+*.pem
+id_rsa
+id_rsa.pub
+config.json
+
+# User data
+*.csv
+*.json
+*.xml
+*.txt
+generated/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.bmp
+
+# Build outputs
+*.egg-info/
+dist/
+build/
+*.egg
+*.pyc
