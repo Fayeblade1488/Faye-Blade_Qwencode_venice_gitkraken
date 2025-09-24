@@ -1,4 +1,5 @@
 # Qwen CLI Integration: GitKraken & Venice AI
+<img width="1536" height="1024" alt="4C240C0C-215E-4FA6-8358-18B06B4C6B5F" src="https://github.com/user-attachments/assets/b70d61f2-0ec6-471e-a2f9-a7a3ab5e8ebe" />
 
 ## Table of Contents
 - [Overview](#overview)
