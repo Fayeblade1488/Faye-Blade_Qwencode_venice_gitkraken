@@ -1,5 +1,15 @@
-# Qwen CLI Integration: GitKraken & Venice AI
-<img width="1536" height="1024" alt="4C240C0C-215E-4FA6-8358-18B06B4C6B5F" src="https://github.com/user-attachments/assets/b70d61f2-0ec6-471e-a2f9-a7a3ab5e8ebe" />
+# 🚀 Qwen CLI Integration: GitKraken & Venice AI 🎨
+
+```
+╔══════════════════════════════════════════════════════════════════════╗
+║                          Qwen CLI Integrator                         ║
+║                GitKraken + Venice AI + External APIs                 ║
+║                                                                    ║
+║  🔐 Secure API Key Management     🧠 AI-Powered Workflows           ║
+║  🖼️ Uncensored Image Generation   📡 Real-time Model Updates        ║
+║  ⚡ Auto-Configuration          🛡️ Security-First Approach         ║
+╚══════════════════════════════════════════════════════════════════════╝
+```
 
 ## Table of Contents
 - [Overview](#overview)
@@ -10,6 +20,7 @@
 - [Usage](#usage)
 - [API Endpoints](#api-endpoints)
 - [Security Considerations](#security-considerations)
+- [Quick Start Guide](QUICKSTART_GUIDE.md) 
 - [Troubleshooting](#troubleshooting)
 - [Development](#development)
 - [Contributing](#contributing)
@@ -20,9 +31,10 @@
 This repository provides a comprehensive integration between Qwen CLI and two powerful tools:
 
 1. **GitKraken CLI**: A complete, AI-powered Git workflow enhancement suite that allows for seamless Git operations with AI assistance
-2. **Venice AI Image Generation**: An uncensored image generation system that provides high-quality image creation and upscaling capabilities
+2. **Venice AI Integration**: An uncensored AI system that provides both image generation and chat capabilities
+3. **External API Integration**: Support for multiple AI providers including Venice AI, with config loading from Raycast format
 
-The integration is designed to work within the Qwen CLI ecosystem, allowing users to leverage advanced Git workflows and AI-powered image generation directly from their command line.
+The integration is designed to work within the Qwen CLI ecosystem, allowing users to leverage advanced Git workflows and AI-powered services directly from their command line. **Note: While the system can read provider configurations from Raycast's format, Raycast is NOT required for usage.**
 
 ## Features
 
@@ -45,6 +57,18 @@ The integration is designed to work within the Qwen CLI ecosystem, allowing user
 - **Batch Operations**: Support for processing multiple images or executing multiple Git operations
 - **Error Handling**: Comprehensive error handling with detailed feedback
 - **Auto-Installation**: Automated setup and dependency management
+
+### Venice AI Verification & Auto-Update
+- **API Key Verification**: Built-in verification to ensure your Venice API key is valid
+- **Auto-Configuration**: Automatic update of Raycast configuration with latest Venice models
+- **Model Sync**: Keep your Raycast provider models synchronized with Venice API
+- **Secure Handling**: API keys are never stored in configuration files
+
+### Raycast-Independent Usage
+- **No Raycast Required**: All functionality works without Raycast installed
+- **Configurable Providers**: Use Venice AI and other providers through either Raycast config format or environment variables
+- **Direct API Access**: Access all Venice AI features directly without any Raycast dependency
+- **Flexible Setup**: Multiple configuration options to suit different user preferences
 
 ## Prerequisites
 
@@ -123,6 +147,43 @@ python qwen_cli_integrator.py venice generate --api-key "your_api_key_here" --pr
 ```python
 from venice_integration import VeniceAIImageGenerator
 generator = VeniceAIImageGenerator(api_key="your_api_key_here")
+```
+
+### External API Provider Configuration
+The integration can load AI provider configurations in Raycast's format. **Raycast is NOT required for this functionality** - you can create the configuration file manually:
+
+1. **Create the configuration directory and file**:
+```bash
+mkdir -p ~/.config/raycast/ai/
+touch ~/.config/raycast/ai/providers.yaml
+```
+
+2. **Add Venice AI provider configuration to `~/.config/raycast/ai/providers.yaml`**:
+```yaml
+providers:
+  - id: venice
+    name: Venice.ai
+    base_url: https://api.venice.ai/api/v1
+    api_keys:
+      openai: "${VENICE_API_KEY}"  # Refers to environment variable
+    models:
+      - id: venice-uncensored
+        name: "Venice Uncensored 1.1"
+        context: 32768
+        provider: venice
+        abilities:
+          temperature: { supported: true, default: 0.7 }
+          vision: { supported: false }
+          tools: { supported: false }
+          web_search: { supported: true }
+          reasoning: { supported: false }
+      # Add other models as needed
+```
+
+3. **Auto-Generate Configuration** (Recommended approach):
+```bash
+# This will auto-create the configuration with all available Venice models
+python auto_config.py --auto
 ```
 
 ### Default Parameters
@@ -209,6 +270,21 @@ python qwen_cli_integrator.py venice upscale \
 
 # List available models
 python qwen_cli_integrator.py venice list-models
+```
+
+#### Venice AI Verification & Auto-Update Commands
+```bash
+# Verify your Venice API key
+python qwen_cli_integrator.py venice-tools verify
+
+# Update Raycast configuration with latest Venice models
+python qwen_cli_integrator.py venice-tools update-config
+
+# List external API providers (including those from Raycast config)
+python qwen_cli_integrator.py external list-providers
+
+# Chat with an external model (e.g., Venice)
+python qwen_cli_integrator.py external chat --provider venice --model venice-uncensored --message "Hello, how are you?"
 ```
 
 ### Python API
@@ -341,6 +417,8 @@ All requests are authenticated using your Venice API key in the Authorization he
 - Use environment variables or secure configuration management
 - Ensure your `.env` file is in `.gitignore`
 - Revoke API keys immediately if they are compromised
+- **Config Security**: API keys are never written to configuration files; the auto-configuration tool uses secure placeholders
+- **Verification Only**: The verification process only confirms the API key works without storing it
 
 ### Uncensored Content
 - The integration is configured for uncensored generation by default
@@ -429,6 +507,23 @@ qwen-integration-public-repo/
 python test_integration.py
 ```
 
+### Auto-Configuration
+The integration includes an auto-configuration tool to verify your Venice API and update your Raycast configuration:
+
+```bash
+# Verify API key only
+python auto_config.py --verify
+
+# Update configuration only
+python auto_config.py --update-config
+
+# Run both verification and configuration update
+python auto_config.py --auto
+
+# Use a specific API key (otherwise uses VENICE_API_KEY environment variable)
+python auto_config.py --auto --api-key "your_api_key_here"
+```
+
 ### Code Quality
 - All Python code follows PEP 8 style guidelines
 - Type hints are included for all public functions
@@ -497,4 +592,4 @@ SOFTWARE.
 
 ---
 
-**Important Note**: This integration is provided as-is. Users are responsible for compliance with the terms of service of GitKraken, Venice AI, and any other services used. The authors are not responsible for any misuse or violation of service terms.
+**Important Note**: This integration is provided as-is. Users are responsible for compliance with the terms of service of GitKraken, Venice AI, and any other services used. The authors are not responsible for any misuse or violation of service terms.# Updated with enhanced Venice AI integration

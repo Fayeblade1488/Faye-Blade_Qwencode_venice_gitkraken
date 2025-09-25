@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Qwen Code Integration Module
-This module combines GitKraken CLI and Venice AI image generation capabilities
-for use within the Qwen Code environment.
+This module combines GitKraken CLI, Venice AI image generation,
+and external API chat capabilities for use within the Qwen Code environment.
 """
 
 import argparse
@@ -14,7 +14,8 @@ from typing import Any, Dict, Optional
 
 # Import our integration modules
 from gitkraken_integration import GitKrakenCLI
-from venice_integration import VeniceAIImageGenerator
+from enhanced_venice_integration import VeniceAIImageGenerator, VeniceAIVerifier, VeniceAIConfigUpdater
+from external_api_integrator import ExternalAPIIntegrator
 
 
 class QwenCLIIntegrator:
@@ -211,6 +212,130 @@ class QwenCLIIntegrator:
                 'success': False,
                 'error': str(e)
             }
+    
+    def external_chat_completion(self, provider_id: str, model_id: str, messages: list, **kwargs) -> Dict[str, Any]:
+        """
+        Perform a chat completion using an external API provider.
+        
+        Args:
+            provider_id: The ID of the provider to use
+            model_id: The ID of the model to use
+            messages: List of messages for the conversation
+            **kwargs: Additional parameters (temperature, max_tokens, etc.)
+            
+        Returns:
+            Dictionary containing the completion result
+        """
+        try:
+            # Initialize the external API integrator
+            external_api = ExternalAPIIntegrator()
+            
+            # Perform the chat completion
+            result = external_api.chat_completion(
+                provider_id=provider_id,
+                model_id=model_id,
+                messages=messages,
+                **kwargs
+            )
+            
+            return result
+        except Exception as e:
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def list_external_providers(self) -> Dict[str, Any]:
+        """
+        List available external API providers.
+        
+        Returns:
+            Dictionary containing the providers listing result
+        """
+        try:
+            # Initialize the external API integrator
+            external_api = ExternalAPIIntegrator()
+            
+            # Get the available providers
+            providers = external_api.get_available_providers()
+            
+            # Also get models for each provider
+            all_models = external_api.list_all_models()
+            
+            return {
+                'success': True,
+                'providers': providers,
+                'models': all_models
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def verify_venice_api(self, api_key: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Verify the Venice AI API key.
+        
+        Args:
+            api_key: API key to verify (optional, will use environment if not provided)
+            
+        Returns:
+            Dictionary containing the verification result
+        """
+        try:
+            # Use provided API key or fallback to environment
+            key_to_use = api_key or self.venice_api_key
+            if not key_to_use:
+                return {
+                    'success': False,
+                    'error': 'No API key provided for verification'
+                }
+            
+            # Initialize the verifier
+            verifier = VeniceAIVerifier(api_key=key_to_use)
+            
+            # Perform verification
+            result = verifier.verify_api_key()
+            
+            return result
+        except Exception as e:
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def update_venice_config(self, api_key: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Update the Raycast configuration with the latest Venice AI models.
+        
+        Args:
+            api_key: API key to use for fetching models (optional, will use environment if not provided)
+            
+        Returns:
+            Dictionary containing the update result
+        """
+        try:
+            # Use provided API key or fallback to environment
+            key_to_use = api_key or self.venice_api_key
+            if not key_to_use:
+                return {
+                    'success': False,
+                    'error': 'No API key provided for configuration update'
+                }
+            
+            # Initialize the config updater
+            updater = VeniceAIConfigUpdater(api_key=key_to_use)
+            
+            # Perform the update
+            result = updater.update_raycast_config(api_key=key_to_use)
+            
+            return result
+        except Exception as e:
+            return {
+                'success': False,
+                'error': str(e)
+            }
 
 
 def main():
@@ -308,6 +433,32 @@ def main():
     # List models command
     venice_subparsers.add_parser("list-models", help="List available Venice AI models")
     
+    # External API subcommands
+    external_parser = subparsers.add_parser("external", help="External API providers integration")
+    external_subparsers = external_parser.add_subparsers(dest="external_command", help="External commands")
+    
+    # External chat completion command
+    chat_parser = external_subparsers.add_parser("chat", help="Chat with an external model")
+    chat_parser.add_argument("--provider", type=str, required=True, help="Provider ID to use")
+    chat_parser.add_argument("--model", type=str, required=True, help="Model ID to use")
+    chat_parser.add_argument("--message", type=str, help="Single message to send")
+    chat_parser.add_argument("--file", type=str, help="File containing the message")
+    chat_parser.add_argument("--temperature", type=float, default=0.7, help="Temperature for generation")
+    chat_parser.add_argument("--max-tokens", type=int, help="Maximum tokens to generate")
+    
+    # List external providers command
+    external_subparsers.add_parser("list-providers", help="List available external API providers")
+    
+    # Venice verification and config update commands
+    venice_tools_parser = subparsers.add_parser("venice-tools", help="Venice AI tools and utilities")
+    venice_tools_subparsers = venice_tools_parser.add_subparsers(dest="venice_tools_command", help="Venice tools commands")
+    
+    # Verify Venice API command
+    verify_parser = venice_tools_subparsers.add_parser("verify", help="Verify Venice AI API key")
+    
+    # Update Venice config command
+    update_config_parser = venice_tools_subparsers.add_parser("update-config", help="Update Raycast config with latest Venice models")
+    
     args = parser.parse_args()
     
     # Initialize the integrator
@@ -374,6 +525,65 @@ def main():
             
         elif args.venice_command == "list-models":
             result = integrator.list_available_models()
+            print(json.dumps(result, indent=2))
+    
+    elif args.tool == "external":
+        if args.external_command is None:
+            parser.print_help()
+            return 1
+        
+        if args.external_command == "chat":
+            # Prepare messages
+            messages = []
+            
+            # Add message from command line or file
+            if args.message:
+                messages.append({"role": "user", "content": args.message})
+            elif args.file:
+                try:
+                    with open(args.file, 'r') as f:
+                        content = f.read()
+                        messages.append({"role": "user", "content": content})
+                except Exception as e:
+                    result = {
+                        'success': False,
+                        'error': f'Error reading file: {str(e)}'
+                    }
+                    print(json.dumps(result, indent=2))
+                    return 1
+            else:
+                result = {
+                    'success': False,
+                    'error': 'Either --message or --file must be provided'
+                }
+                print(json.dumps(result, indent=2))
+                return 1
+            
+            # Call external chat completion
+            result = integrator.external_chat_completion(
+                provider_id=args.provider,
+                model_id=args.model,
+                messages=messages,
+                temperature=args.temperature,
+                max_tokens=args.max_tokens
+            )
+            print(json.dumps(result, indent=2))
+        
+        elif args.external_command == "list-providers":
+            result = integrator.list_external_providers()
+            print(json.dumps(result, indent=2))
+    
+    elif args.tool == "venice-tools":
+        if args.venice_tools_command is None:
+            parser.print_help()
+            return 1
+        
+        if args.venice_tools_command == "verify":
+            result = integrator.verify_venice_api()
+            print(json.dumps(result, indent=2))
+        
+        elif args.venice_tools_command == "update-config":
+            result = integrator.update_venice_config()
             print(json.dumps(result, indent=2))
     
     else:
