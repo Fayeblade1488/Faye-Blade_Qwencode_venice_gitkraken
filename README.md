@@ -1,13 +1,14 @@
 # 🚀 Qwen CLI Integration: GitKraken & Venice AI 🎨
+<img width="1536" height="1024" alt="image2 copy" src="https://github.com/user-attachments/assets/a23c49db-d0b8-4468-aa5a-a85e1b3ab0f3" />
 
 ```
 ╔══════════════════════════════════════════════════════════════════════╗
 ║                          Qwen CLI Integrator                         ║
 ║                GitKraken + Venice AI + External APIs                 ║
-║                                                                    ║
-║  🔐 Secure API Key Management     🧠 AI-Powered Workflows           ║
-║  🖼️ Uncensored Image Generation   📡 Real-time Model Updates        ║
-║  ⚡ Auto-Configuration          🛡️ Security-First Approach         ║
+║                                                                      ║
+║  🔐 Secure API Key Management     🧠 AI-Powered Workflows            ║
+║  🖼️ Uncensored Image Generation   📡 Real-time Model Updates         ║
+║  ⚡ Auto-Configuration             🛡️ Security-First Approach         ║
 ╚══════════════════════════════════════════════════════════════════════╝
 ```
 
