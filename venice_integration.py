@@ -612,24 +612,24 @@ class VeniceAIImageGenerator:
         
         # Handle the response
         if self._is_binary_image_response(resp):
-            result: Dict[str, Any] = {"images": [base64.b64encode(resp.content).decode("utf-8")]}
+            b = resp.content
+            result = {}
         else:
             result = resp.json()
-        
-        # Extract image data
-        images_b64: List[str] = []
-        if "images" in result and isinstance(result["images"], list):
-            images_b64 = [img for img in result["images"] if isinstance(img, str)]
-        elif "image" in result and isinstance(result["image"], str):
-            images_b64 = [result["image"]]
-        else:
-            raise KeyError("No images found in generation response.")
-        
-        if not images_b64:
-            raise ValueError("No image generated.")
-        
-        # Decode the first image
-        b = base64.b64decode(images_b64[0])
+            # Extract image data from JSON response
+            images_b64: List[str] = []
+            if "images" in result and isinstance(result["images"], list):
+                images_b64 = [img for img in result["images"] if isinstance(img, str)]
+            elif "image" in result and isinstance(result["image"], str):
+                images_b64 = [result["image"]]
+            else:
+                raise KeyError("No images found in generation response.")
+            
+            if not images_b64:
+                raise ValueError("No image generated.")
+            
+            # Decode the first image
+            b = base64.b64decode(images_b64[0])
         output = {"bytes": b, "meta": {"response": result, "request_id": req_id}}
         
         if verbose:
@@ -924,7 +924,10 @@ def main():
             result = verifier.verify_api_key()
             print(json.dumps(result, indent=2))
 
+        if args.update_config:
+            updater = VeniceAIConfigUpdater(api_key)
             result = updater.update_raycast_config()
+            print(json.dumps(result, indent=2))
         
         elif args.list_models:
             verifier = VeniceAIVerifier(api_key)
