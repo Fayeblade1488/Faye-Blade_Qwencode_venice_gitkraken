@@ -14,17 +14,28 @@ from typing import Any, Dict, Optional
 
 # Import our integration modules
 from gitkraken_integration import GitKrakenCLI
-from enhanced_venice_integration import VeniceAIImageGenerator, VeniceAIVerifier, VeniceAIConfigUpdater
+from venice_integration import VeniceAIImageGenerator, VeniceAIVerifier, VeniceAIConfigUpdater
 from external_api_integrator import ExternalAPIIntegrator
 
 
 class QwenCLIIntegrator:
+    """Orchestrates integrations with GitKraken, Venice AI, and other external APIs.
+
+    This class serves as the main hub for the command-line tool. It initializes
+    the necessary integration clients and provides methods to delegate commands
+    to the appropriate module, whether it's for version control, AI image
+    generation, or chat functionalities.
+
+    Attributes:
+        gitkraken (GitKrakenCLI): An instance of the GitKraken CLI wrapper.
+        venice_api_key (Optional[str]): The API key for Venice AI, loaded
+            from the environment.
+        venice (Optional[VeniceAIImageGenerator]): An instance of the Venice AI
+            image generator, initialized if an API key is available.
     """
-    Main class that integrates both GitKraken and Venice AI capabilities
-    for use within the Qwen Code environment.
-    """
-    
+
     def __init__(self):
+        """Initializes the QwenCLIIntegrator."""
         self.gitkraken = GitKrakenCLI()
         self.venice_api_key = os.environ.get("VENICE_API_KEY")
         self.venice = None
@@ -37,15 +48,20 @@ class QwenCLIIntegrator:
                 print(f"Warning: Venice AI not initialized: {e}", file=sys.stderr)
     
     def gitkraken_command(self, command: str, **kwargs) -> Dict[str, Any]:
-        """
-        Execute a GitKraken CLI command.
-        
+        """Executes a GitKraken CLI command.
+
+        This method acts as a dispatcher, mapping a command string to the
+        corresponding method in the `GitKrakenCLI` instance.
+
         Args:
-            command: The command to execute (e.g., 'ai_commit', 'graph', 'workspace_list')
-            **kwargs: Arguments to pass to the command
-            
+            command: The name of the GitKraken command to execute (e.g.,
+                'ai_commit', 'workspace_list').
+            **kwargs: Keyword arguments to pass to the corresponding
+                `GitKrakenCLI` method.
+
         Returns:
-            Dictionary containing the command result
+            A dictionary containing the result of the command execution.
+            This typically includes 'success', 'stdout', and 'stderr'.
         """
         if not self.gitkraken.is_installed():
             return {
@@ -135,15 +151,20 @@ class QwenCLIIntegrator:
             }
     
     def venice_generate_image(self, prompt: str, **kwargs) -> Dict[str, Any]:
-        """
-        Generate an image using Venice AI.
-        
+        """Generates an image using the Venice AI service.
+
+        This is a wrapper around the `generate_image` method in the
+        `VeniceAIImageGenerator` class.
+
         Args:
-            prompt: The prompt for image generation
-            **kwargs: Additional parameters for image generation
-            
+            prompt: The text prompt for image generation.
+            **kwargs: Additional parameters to pass to the image generator,
+                such as `model`, `aspect_ratio`, `steps`, etc.
+
         Returns:
-            Dictionary containing the generation result
+            A dictionary containing the result of the image generation,
+            including file paths and metadata. Returns an error dictionary
+            if Venice AI is not initialized.
         """
         if not self.venice:
             return {
@@ -161,15 +182,19 @@ class QwenCLIIntegrator:
             }
     
     def venice_upscale_image(self, image_path: str, **kwargs) -> Dict[str, Any]:
-        """
-        Upscale an image using Venice AI.
-        
+        """Upscales an image using the Venice AI service.
+
+        This is a wrapper around the `upscale_image_file` method in the
+        `VeniceAIImageGenerator` class.
+
         Args:
-            image_path: Path to the input image file
-            **kwargs: Additional parameters for upscaling
-            
+            image_path: The local path to the image file to be upscaled.
+            **kwargs: Additional parameters for the upscaling process,
+                such as `scale`, `enhance`, etc.
+
         Returns:
-            Dictionary containing the upscaling result
+            A dictionary containing the result of the upscaling operation.
+            Returns an error dictionary if Venice AI is not initialized.
         """
         if not self.venice:
             return {
@@ -187,11 +212,15 @@ class QwenCLIIntegrator:
             }
     
     def list_available_models(self) -> Dict[str, Any]:
-        """
-        List available Venice AI models, especially uncensored ones.
-        
+        """Lists available models from the Venice AI service.
+
+        This method fetches all models and also provides a filtered list of
+        models identified as 'uncensored'.
+
         Returns:
-            Dictionary containing the model listing result
+            A dictionary containing lists of all models and just the
+            uncensored models. Returns an error dictionary if Venice AI
+            is not initialized.
         """
         if not self.venice:
             return {
@@ -200,12 +229,12 @@ class QwenCLIIntegrator:
             }
         
         try:
-            models = self.venice.list_models()
-            uncensored_models = self.venice.get_uncensored_models()
+            # The list_models method now returns a dictionary containing both lists
+            model_data = self.venice.list_models()
             return {
                 'success': True,
-                'all_models': models,
-                'uncensored_models': uncensored_models
+                'all_models': model_data.get('all_models', []),
+                'uncensored_models': model_data.get('uncensored_models', [])
             }
         except Exception as e:
             return {
@@ -214,17 +243,20 @@ class QwenCLIIntegrator:
             }
     
     def external_chat_completion(self, provider_id: str, model_id: str, messages: list, **kwargs) -> Dict[str, Any]:
-        """
-        Perform a chat completion using an external API provider.
-        
+        """Performs a chat completion using an external API provider.
+
+        This method initializes the `ExternalAPIIntegrator` and calls its
+        `chat_completion` method.
+
         Args:
-            provider_id: The ID of the provider to use
-            model_id: The ID of the model to use
-            messages: List of messages for the conversation
-            **kwargs: Additional parameters (temperature, max_tokens, etc.)
-            
+            provider_id: The unique identifier for the API provider.
+            model_id: The unique identifier for the model to use.
+            messages: A list of message dictionaries for the conversation.
+            **kwargs: Additional parameters to pass to the chat completion API,
+                such as `temperature` or `max_tokens`.
+
         Returns:
-            Dictionary containing the completion result
+            A dictionary containing the result of the chat completion.
         """
         try:
             # Initialize the external API integrator
@@ -246,11 +278,15 @@ class QwenCLIIntegrator:
             }
     
     def list_external_providers(self) -> Dict[str, Any]:
-        """
-        List available external API providers.
-        
+        """Lists available external API providers and their models.
+
+        This method initializes the `ExternalAPIIntegrator` to load provider
+        configurations and return a list of available providers and their
+        respective models.
+
         Returns:
-            Dictionary containing the providers listing result
+            A dictionary containing a list of provider IDs and a mapping of
+            provider IDs to their available models.
         """
         try:
             # Initialize the external API integrator
@@ -274,14 +310,17 @@ class QwenCLIIntegrator:
             }
     
     def verify_venice_api(self, api_key: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Verify the Venice AI API key.
-        
+        """Verifies a Venice AI API key.
+
+        This is a wrapper around the `verify_api_key` method in the
+        `VeniceAIVerifier` class.
+
         Args:
-            api_key: API key to verify (optional, will use environment if not provided)
-            
+            api_key: The API key to verify. If not provided, the key from
+                the environment will be used.
+
         Returns:
-            Dictionary containing the verification result
+            A dictionary containing the verification result.
         """
         try:
             # Use provided API key or fallback to environment
@@ -305,30 +344,28 @@ class QwenCLIIntegrator:
                 'error': str(e)
             }
     
-    def update_venice_config(self, api_key: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Update the Raycast configuration with the latest Venice AI models.
-        
-        Args:
-            api_key: API key to use for fetching models (optional, will use environment if not provided)
-            
+    def update_venice_config(self) -> Dict[str, Any]:
+        """Updates the Raycast configuration with the latest Venice AI models.
+
+        This is a wrapper around the `update_raycast_config` method in the
+        `VeniceAIConfigUpdater` class. It uses the API key stored in the
+        instance.
+
         Returns:
-            Dictionary containing the update result
+            A dictionary containing the result of the configuration update.
         """
         try:
-            # Use provided API key or fallback to environment
-            key_to_use = api_key or self.venice_api_key
-            if not key_to_use:
+            if not self.venice_api_key:
                 return {
                     'success': False,
                     'error': 'No API key provided for configuration update'
                 }
             
-            # Initialize the config updater
-            updater = VeniceAIConfigUpdater(api_key=key_to_use)
+            # Initialize the config updater with the instance's API key
+            updater = VeniceAIConfigUpdater(api_key=self.venice_api_key)
             
             # Perform the update
-            result = updater.update_raycast_config(api_key=key_to_use)
+            result = updater.update_raycast_config()
             
             return result
         except Exception as e:
@@ -339,7 +376,11 @@ class QwenCLIIntegrator:
 
 
 def main():
-    """Main function to handle command line interface."""
+    """The main entry point for the command-line interface.
+
+    This function parses command-line arguments and calls the appropriate
+    method in the `QwenCLIIntegrator` class to execute the requested command.
+    """
     parser = argparse.ArgumentParser(description="Qwen Code Integration Tool")
     subparsers = parser.add_subparsers(dest="tool", help="Available tools")
     
