@@ -924,10 +924,7 @@ def main():
             result = verifier.verify_api_key()
             print(json.dumps(result, indent=2))
 
-        elif args.update_config:
-            updater = VeniceAIConfigUpdater(api_key)
-            result = updater.update_raycast_config(api_key)
-            print(json.dumps(result, indent=2))
+            result = updater.update_raycast_config()
         
         elif args.list_models:
             verifier = VeniceAIVerifier(api_key)
