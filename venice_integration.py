@@ -960,7 +960,7 @@ def main():
             result = verifier.verify_api_key()
             print(json.dumps(result, indent=2))
 
-        if args.update_config:
+        elif args.update_config:
             updater = VeniceAIConfigUpdater(api_key)
             result = updater.update_raycast_config()
             print(json.dumps(result, indent=2))

@@ -9,6 +9,7 @@ based on configurations from Raycast or other external sources.
 import argparse
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import requests
@@ -252,7 +253,7 @@ class ExternalAPIIntegrator:
         
         try:
             # Make the request to the provider
-            response = requests.post(f"{base_url}/chat/completions", headers=headers, json=data)
+            response = requests.post(f"{base_url}/chat/completions", headers=headers, json=data, timeout=30)
             
             if response.status_code == 200:
                 return {
