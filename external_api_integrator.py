@@ -22,20 +22,38 @@ except ImportError:
 
 
 class ExternalAPIIntegrator:
+    """Integrates with external AI providers using configuration files.
+
+    This class loads provider details, such as API endpoints and models, from
+    a YAML configuration file (e.g., from Raycast). It provides methods to
+    list available providers and models, and to perform chat completions
+    using a specified provider.
+
+    Attributes:
+        providers_config_path (Optional[str]): The path to the provider
+            configuration YAML file.
+        providers (Dict[str, Any]): A dictionary holding the configuration
+            for all loaded providers, keyed by provider ID.
     """
-    A class to integrate with external API providers like Venice.ai
-    based on configurations from external sources like Raycast.
-    """
-    
+
     def __init__(self, providers_config_path: Optional[str] = None):
+        """Initializes the ExternalAPIIntegrator.
+
+        Args:
+            providers_config_path: An optional path to the providers'
+                configuration file. If not provided, it will search in the
+                default Raycast config locations.
+        """
         self.providers_config_path = providers_config_path or self._find_raycast_providers_config()
         self.providers = {}
         if self.providers_config_path:
             self.load_providers_from_config()
     
     def _find_raycast_providers_config(self) -> Optional[str]:
-        """
-        Find the Raycast providers configuration file.
+        """Finds the Raycast providers configuration file in common locations.
+
+        Returns:
+            The path to the configuration file if found, otherwise None.
         """
         possible_paths = [
             os.path.expanduser("~/.config/raycast/ai/providers.yaml"),
@@ -49,11 +67,13 @@ class ExternalAPIIntegrator:
         return None
     
     def load_providers_from_config(self) -> bool:
-        """
-        Load providers from the Raycast configuration file.
-        
+        """Loads provider configurations from the YAML file.
+
+        Parses the YAML file specified in `providers_config_path` and populates
+        the `providers` dictionary.
+
         Returns:
-            bool: True if providers were loaded successfully, False otherwise
+            True if providers were loaded successfully, False otherwise.
         """
         if not self.providers_config_path or not os.path.exists(self.providers_config_path):
             return False
@@ -76,35 +96,34 @@ class ExternalAPIIntegrator:
             return False
     
     def get_available_providers(self) -> List[str]:
-        """
-        Get a list of available provider IDs.
-        
+        """Gets a list of available provider IDs from the loaded configuration.
+
         Returns:
-            List[str]: List of available provider IDs
+            A list of strings, where each string is a provider ID.
         """
         return list(self.providers.keys())
     
     def get_provider_info(self, provider_id: str) -> Optional[Dict[str, Any]]:
-        """
-        Get information about a specific provider.
-        
+        """Gets the configuration information for a specific provider.
+
         Args:
-            provider_id: The ID of the provider to get info for
-            
+            provider_id: The ID of the provider to retrieve information for.
+
         Returns:
-            Optional[Dict[str, Any]]: Provider information or None if not found
+            A dictionary containing the provider's configuration, or None if
+            the provider ID is not found.
         """
         return self.providers.get(provider_id)
     
     def get_provider_models(self, provider_id: str) -> List[Dict[str, Any]]:
-        """
-        Get models available for a specific provider.
-        
+        """Gets the list of models available for a specific provider.
+
         Args:
-            provider_id: The ID of the provider
-            
+            provider_id: The ID of the provider.
+
         Returns:
-            List[Dict[str, Any]]: List of models available for the provider
+            A list of model dictionaries for the specified provider. Returns
+            an empty list if the provider is not found.
         """
         provider_info = self.get_provider_info(provider_id)
         if not provider_info:
@@ -113,14 +132,17 @@ class ExternalAPIIntegrator:
         return provider_info.get('models', [])
     
     def get_default_provider_api_key(self, provider_id: str) -> Optional[str]:
-        """
-        Get the API key for a provider from the configuration.
-        
+        """Retrieves the API key for a provider from the configuration.
+
+        It prioritizes keys of type 'openai' but will return the first key
+        it finds. Note that keys may be placeholders that reference
+        environment variables (e.g., "${VENICE_API_KEY}").
+
         Args:
-            provider_id: The ID of the provider
-            
+            provider_id: The ID of the provider.
+
         Returns:
-            Optional[str]: API key or None if not found
+            The API key string or placeholder, or None if not found.
         """
         provider_info = self.get_provider_info(provider_id)
         if not provider_info or 'api_keys' not in provider_info:
@@ -147,19 +169,24 @@ class ExternalAPIIntegrator:
         max_tokens: Optional[int] = None,
         **kwargs
     ) -> Dict[str, Any]:
-        """
-        Perform a chat completion using an external provider.
-        
+        """Performs a chat completion using a specified external provider.
+
+        This method constructs and sends a request to the provider's chat
+        completion endpoint and returns the response.
+
         Args:
-            provider_id: The ID of the provider to use
-            model_id: The ID of the model to use
-            messages: List of messages for the conversation
-            temperature: Temperature for the generation
-            max_tokens: Maximum tokens to generate
-            **kwargs: Additional parameters for the request
-            
+            provider_id: The ID of the provider to use (e.g., 'venice').
+            model_id: The ID of the model to use for the completion.
+            messages: A list of message dictionaries, following the standard
+                OpenAI format (e.g., `[{'role': 'user', 'content': '...'}]`).
+            temperature: The temperature for the generation (creativity).
+            max_tokens: The maximum number of tokens to generate.
+            **kwargs: Any other parameters to pass to the provider's API.
+
         Returns:
-            Dict[str, Any]: Response from the provider
+            A dictionary containing the API response. On success, this will
+            include the 'response' key with the provider's JSON response.
+            On failure, it will include an 'error' key with details.
         """
         provider_info = self.get_provider_info(provider_id)
         if not provider_info:
@@ -176,13 +203,25 @@ class ExternalAPIIntegrator:
             }
         
         # Get API key
-        api_key = self.get_default_provider_api_key(provider_id)
-        if not api_key:
+        api_key_placeholder = self.get_default_provider_api_key(provider_id)
+        if not api_key_placeholder:
             return {
                 'success': False,
                 'error': f'No API key found for provider {provider_id}'
             }
         
+        # Resolve API key from environment variable if it's a placeholder
+        if api_key_placeholder.startswith('${') and api_key_placeholder.endswith('}'):
+            env_var_name = api_key_placeholder[2:-1]
+            api_key = os.environ.get(env_var_name)
+            if not api_key:
+                return {
+                    'success': False,
+                    'error': f'Environment variable {env_var_name} for API key not set'
+                }
+        else:
+            api_key = api_key_placeholder
+
         # Validate model exists
         available_models = [m['id'] for m in self.get_provider_models(provider_id)]
         if model_id not in available_models:
@@ -237,11 +276,11 @@ class ExternalAPIIntegrator:
             }
     
     def list_all_models(self) -> Dict[str, List[Dict[str, Any]]]:
-        """
-        List all models for all providers.
-        
+        """Lists all models for all configured providers.
+
         Returns:
-            Dict[str, List[Dict[str, Any]]]: Dictionary mapping provider IDs to their models
+            A dictionary mapping each provider ID to a list of its
+            available model dictionaries.
         """
         all_models = {}
         for provider_id in self.providers:

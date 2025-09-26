@@ -14,10 +14,18 @@ from pathlib import Path
 # Add the current directory to Python path to import modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from enhanced_venice_integration import VeniceAIVerifier, VeniceAIConfigUpdater
+from venice_integration import VeniceAIVerifier, VeniceAIConfigUpdater
 
 
 def main():
+    """Parses command-line arguments and runs auto-configuration tasks.
+
+    This script provides command-line options to verify the Venice AI API key
+    and to automatically update the Raycast configuration file with the latest
+    models from the Venice AI API. It handles API key input via arguments
+    or environment variables and executes the appropriate functions from the
+    `enhanced_venice_integration` module.
+    """
     parser = argparse.ArgumentParser(description="Venice AI Auto-Configuration Tool")
     parser.add_argument(
         "--verify",
