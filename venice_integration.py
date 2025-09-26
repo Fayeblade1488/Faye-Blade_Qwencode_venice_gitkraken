@@ -612,7 +612,7 @@ class VeniceAIImageGenerator:
         
         # Handle the response
         if self._is_binary_image_response(resp):
-            result: Dict[str, Any] = {"images": [base64.b64decode(resp.content).decode("utf-8")]}
+            result: Dict[str, Any] = {"images": [base64.b64encode(resp.content).decode("utf-8")]}
         else:
             result = resp.json()
         
