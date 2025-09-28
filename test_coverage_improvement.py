@@ -522,18 +522,33 @@ class TestQwenCLIIntegrator(unittest.TestCase):
         self.assertTrue(result['success'])
         self.assertIn('providers', result)
     
-    @patch('qwen_cli_integrator.sys.argv', ['qwen_cli_integrator.py', '--help'])
-    @patch('qwen_cli_integrator.argparse.ArgumentParser')
-    def test_main_help(self, mock_parser_class):
-        """Test main function with --help."""
-        from qwen_cli_integrator import main
-        
-        mock_parser = MagicMock()
-        mock_parser_class.return_value = mock_parser
-        
-        result = main()
-        mock_parser.print_help.assert_called()
-
-
++    @patch('qwen_cli_integrator.sys.argv', ['qwen_cli_integrator.py', '--help'])
++    @patch('qwen_cli_integrator.argparse.ArgumentParser')
++    def test_main_help(self, mock_parser_class):
++        """Test main function with --help."""
++        from qwen_cli_integrator import main
++        
++        mock_parser = MagicMock()
++        mock_parser_class.return_value = mock_parser
++        
++        result = main()
++        mock_parser.print_help.assert_called()
++
++    @patch('qwen_cli_integrator.sys.argv', ['qwen_cli_integrator.py', 'invalid_subcommand'])
++    @patch('qwen_cli_integrator.argparse.ArgumentParser')
++    def test_main_invalid_subcommand(self, mock_parser_class):
++        """Test main function with invalid subcommand."""
++        from qwen_cli_integrator import main
++
++        mock_parser = MagicMock()
++        # Simulate parse_args returning a Namespace with an invalid subcommand
++        mock_parser.parse_args.return_value = argparse.Namespace(command='invalid_subcommand')
++        mock_parser_class.return_value = mock_parser
++
++        # Simulate error handling: ArgumentParser.error should be called
++        mock_parser.error = MagicMock()
++
++        main()
++        mock_parser.error.assert_called()
 if __name__ == '__main__':
     unittest.main()
