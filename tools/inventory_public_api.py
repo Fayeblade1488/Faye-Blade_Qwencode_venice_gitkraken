@@ -113,8 +113,7 @@ class APIInventory:
                         "name": node.name,
                         "line": node.lineno,
                         "has_docstring": self.has_docstring(node),
-                        "docstring_preview": (self.get_docstring(node) or "")[:100],
-                        "methods": []
+                        "docstring_preview": (self.get_docstring(node) or "")[:100]
                     })
                     
                     # Process class methods
