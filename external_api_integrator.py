@@ -253,7 +253,7 @@ class ExternalAPIIntegrator:
         
         try:
             # Make the request to the provider
-            response = requests.post(f"{base_url}/chat/completions", headers=headers, json=data, timeout=30)
+            response = requests.post(f"{base_url}/chat/completions", headers=headers, json=data, timeout=DEFAULT_REQUEST_TIMEOUT)
             
             if response.status_code == 200:
                 return {
