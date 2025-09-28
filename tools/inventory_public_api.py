@@ -216,8 +216,12 @@ class APIInventory:
                         f.write(f"- {doc_status} **{item['name']}** "
                                f"(line {item['line']}, {item['type']})\n")
                     if item["has_docstring"] and item["docstring_preview"]:
-                        preview = item["docstring_preview"].replace("\n", " ")[:80]
-                        f.write(f"  - Preview: `{preview}...`\n")
+                        docstring_flat = item["docstring_preview"].replace("\n", " ")
+                        if len(docstring_flat) > 80:
+                            preview = docstring_flat[:80]
+                            f.write(f"  - Preview: `{preview}...`\n")
+                        else:
+                            f.write(f"  - Preview: `{docstring_flat}`\n")
                 f.write("\n")
 
 
