@@ -960,7 +960,17 @@ def main():
             result = verifier.verify_api_key()
             print(json.dumps(result, indent=2))
 
-        elif args.update_config:
+            group = parser.add_mutually_exclusive_group()
+            group.add_argument(
+                "--verify",
+                action="store_true",
+                help="Verify the Venice AI API key.",
+            )
+            group.add_argument(
+                "--update-config",
+                action="store_true",
+                help="Update the Raycast configuration with the latest Venice AI models.",
+            )
             updater = VeniceAIConfigUpdater(api_key)
             result = updater.update_raycast_config()  # correct usage; takes no arguments
             print(json.dumps(result, indent=2))
