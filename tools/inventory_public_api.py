@@ -56,9 +56,7 @@ class APIInventory:
         Returns:
             The docstring text if present, None otherwise.
         """
-        if not self.has_docstring(node):
-            return None
-        return node.body[0].value.value
+        return None if not self.has_docstring(node) else node.body[0].value.value
     
     def process_file(self, filepath: Path) -> None:
         """Process a single Python file and extract public API symbols.
