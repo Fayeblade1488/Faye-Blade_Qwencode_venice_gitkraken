@@ -263,7 +263,6 @@ def main():
     
     # Process files
     inventory = APIInventory()
-    import ast
 
     def is_python_file(path):
         if not path.exists():
