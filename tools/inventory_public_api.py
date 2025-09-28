@@ -77,7 +77,7 @@ class APIInventory:
             print(f"Syntax error in {filepath}: {e}", file=sys.stderr)
             return
         
-        for node in ast.walk(tree):
+        for node in tree.body:
             # Process module-level functions
             if isinstance(node, ast.FunctionDef):
                 if self.is_public(node.name) and hasattr(node, "lineno"):
