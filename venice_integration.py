@@ -962,7 +962,7 @@ def main():
 
         elif args.update_config:
             updater = VeniceAIConfigUpdater(api_key)
-            result = updater.update_raycast_config()
+            result = updater.update_raycast_config()  # correct usage; takes no arguments
             print(json.dumps(result, indent=2))
         
         elif args.list_models:

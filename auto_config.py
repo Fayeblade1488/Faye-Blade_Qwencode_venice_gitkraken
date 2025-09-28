@@ -70,7 +70,7 @@ def main():
     if args.update_config or args.auto:
         print("Updating Raycast configuration with latest Venice models...")
         updater = VeniceAIConfigUpdater(api_key=api_key)
-        result = updater.update_raycast_config()
+        result = updater.update_raycast_config()  # correct usage; takes no arguments
         print(json.dumps(result, indent=2))
         if not result.get("success"):
             success = False
