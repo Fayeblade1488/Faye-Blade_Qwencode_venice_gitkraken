@@ -266,13 +266,34 @@ def main():
     
     # Process files
     inventory = APIInventory()
+    import ast
+
+    def is_python_file(path):
+        if not path.exists():
+            return False
+        if path.suffix == ".py":
+            return True
+        try:
+            with path.open("r", encoding="utf-8") as f:
+                first_line = f.readline()
+                if first_line.startswith("#!"):
+                    if "python" in first_line:
+                        return True
+            # Try parsing as Python
+            with path.open("r", encoding="utf-8") as f:
+                source = f.read()
+                ast.parse(source)
+            return True
+        except Exception:
+            return False
+
     for filepath in files_to_process:
         path = Path(filepath)
-        if path.exists() and path.suffix == ".py":
+        if is_python_file(path):
             print(f"Processing {path}...", file=sys.stderr)
             inventory.process_file(path)
         else:
-            print(f"Warning: Skipping {filepath} (not found or not a .py file)", file=sys.stderr)
+            print(f"Warning: Skipping {filepath} (not found or not a Python file)", file=sys.stderr)
     
     # Generate outputs
     if args.out_json:
