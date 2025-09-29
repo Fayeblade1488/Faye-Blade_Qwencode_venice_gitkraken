@@ -224,7 +224,7 @@ class ExternalAPIIntegrator:
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            raise requests.RequestException(f"API request failed: {e}")
+            raise requests.RequestException(f"API request failed: {e}") from e
     
     def list_all_models(self) -> Dict[str, List[Dict[str, Any]]]:
         """Lists all models from all loaded providers.
