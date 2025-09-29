@@ -86,7 +86,10 @@ class ExternalAPIIntegrator:
                 self.providers = {p['id']: p for p in config_data['providers'] if 'id' in p}
                 return True
             else:
-                print(f"Warning: 'providers' key not found in config file '{self.providers_config_path}'.", file=sys.stderr)
+                if not config_data:
+                    print(f"Warning: Config file '{self.providers_config_path}' is empty or could not be parsed.", file=sys.stderr)
+                else:
+                    print(f"Warning: 'providers' key not found in config file '{self.providers_config_path}'.", file=sys.stderr)
         except Exception as e:
             print(f"Error loading providers config: {e}", file=sys.stderr)
         
