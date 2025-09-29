@@ -67,8 +67,26 @@ class VeniceAIVerifier:
         return s
 
     def _with_timeouts(self, func, timeouts: Tuple[int, int]):
-        """Add timeout wrapper to request function."""
+        """Add timeout wrapper to request function.
+        
+        Args:
+            func: The request function to wrap.
+            timeouts: A tuple of (connect_timeout, read_timeout) in seconds.
+            
+        Returns:
+            A wrapper function that adds timeout handling to the request.
+        """
         def wrapper(method, url, **kwargs):
+            """Wrapper function that applies timeouts and rate limiting to requests.
+            
+            Args:
+                method: HTTP method (GET, POST, etc.).
+                url: The URL to make the request to.
+                **kwargs: Additional keyword arguments for the request.
+                
+            Returns:
+                The response from the wrapped request function.
+            """
             timeout = kwargs.pop("timeout", (timeouts[0], timeouts[1]))
             time.sleep(random.uniform(0, 0.05))
             return func(method, url, timeout=timeout, **kwargs)
@@ -383,8 +401,26 @@ class VeniceAIImageGenerator:
         return s
     
     def _with_timeouts(self, func, timeouts: Tuple[int, int]):
-        """Adds a timeout wrapper to a request function."""
+        """Adds a timeout wrapper to a request function.
+        
+        Args:
+            func: The request function to wrap.
+            timeouts: A tuple of (connect_timeout, read_timeout) in seconds.
+            
+        Returns:
+            A wrapper function that adds timeout handling to the request.
+        """
         def wrapper(method, url, **kwargs):
+            """Wrapper function that applies timeouts and rate limiting to requests.
+            
+            Args:
+                method: HTTP method (GET, POST, etc.).
+                url: The URL to make the request to.
+                **kwargs: Additional keyword arguments for the request.
+                
+            Returns:
+                The response from the wrapped request function.
+            """
             timeout = kwargs.pop("timeout", (timeouts[0], timeouts[1]))
             time.sleep(random.uniform(0, 0.05))
             return func(method, url, timeout=timeout, **kwargs)
@@ -924,9 +960,19 @@ def main():
             result = verifier.verify_api_key()
             print(json.dumps(result, indent=2))
 
-        if args.update_config:
+            group = parser.add_mutually_exclusive_group()
+            group.add_argument(
+                "--verify",
+                action="store_true",
+                help="Verify the Venice AI API key.",
+            )
+            group.add_argument(
+                "--update-config",
+                action="store_true",
+                help="Update the Raycast configuration with the latest Venice AI models.",
+            )
             updater = VeniceAIConfigUpdater(api_key)
-            result = updater.update_raycast_config()
+            result = updater.update_raycast_config()  # correct usage; takes no arguments
             print(json.dumps(result, indent=2))
         
         elif args.list_models:
