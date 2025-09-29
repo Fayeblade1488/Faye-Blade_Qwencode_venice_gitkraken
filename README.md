@@ -188,10 +188,182 @@ When using the uncensored image generation capabilities, please be aware that th
 2. **Venice API key error**: Make sure you have set the `VENICE_API_KEY` environment variable
 3. **Rate limiting**: You may encounter rate limits with the Venice API depending on your account tier
 
+## Development
+
+### Setting Up Development Environment
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Fayeblade1488/Faye-Blade_Qwencode_venice_gitkraken.git
+   cd Faye-Blade_Qwencode_venice_gitkraken
+   ```
+
+2. **Create a Virtual Environment** (recommended):
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Set Environment Variables**:
+   ```bash
+   export VENICE_API_KEY="your_venice_api_key"
+   ```
+
+### Project Structure
+
+```
+.
+├── gitkraken_integration.py      # GitKraken CLI wrapper
+├── venice_integration.py         # Venice AI image generation & verification
+├── external_api_integrator.py    # External AI provider integration
+├── qwen_cli_integrator.py        # Main CLI orchestrator
+├── auto_config.py                # Auto-configuration script
+├── test_integration.py           # Integration tests
+├── AGENT.md                      # Documentation for AI agents
+├── QUICKSTART_GUIDE.md           # Beginner-friendly guide
+└── README.md                     # This file
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+python -m pytest
+
+# Run with coverage
+python -m pytest --cov=. --cov-report=html
+
+# Run specific test file
+python -m pytest test_integration.py
+```
+
+### Code Quality
+
+This project follows:
+- **Python PEP 8** style guidelines
+- **Google-style docstrings** for all public functions/methods/classes
+- **Type hints** where applicable
+- **Security-first approach**: API keys are never logged or stored in configs
+
+### Security Features
+
+- **Sensitive Data Redaction**: All API responses containing API keys, tokens, passwords are automatically redacted before logging
+- **Environment Variable Only**: API keys must be provided via environment variables, never in code or config files
+- **Secure Retry Logic**: Built-in retry mechanisms with exponential backoff for API calls
+- **Timeout Protection**: All API calls have connection and read timeouts to prevent hanging
+
+## Architecture
+
+### Component Overview
+
+1. **QwenCLIIntegrator** (`qwen_cli_integrator.py`)
+   - Main orchestrator class
+   - Delegates commands to appropriate integration modules
+   - Handles CLI argument parsing and command routing
+
+2. **GitKrakenCLI** (`gitkraken_integration.py`)
+   - Wraps GitKraken CLI (`gk`) commands
+   - Provides Python API for all GitKraken features
+   - Includes AI-powered Git workflows
+
+3. **VeniceAIImageGenerator** (`venice_integration.py`)
+   - Handles image generation and upscaling
+   - Supports uncensored models
+   - Automatic retry logic and error handling
+
+4. **VeniceAIVerifier** (`venice_integration.py`)
+   - API key verification
+   - Model fetching and discovery
+
+5. **VeniceAIConfigUpdater** (`venice_integration.py`)
+   - Auto-generates Raycast configuration
+   - Keeps model lists up-to-date
+
+6. **ExternalAPIIntegrator** (`external_api_integrator.py`)
+   - Generic external AI provider support
+   - Reads Raycast-format configuration files
+   - Extensible for multiple providers
+
+### Data Flow
+
+```
+User Command → qwen_cli_integrator.py → Specific Integration Module → External API/CLI
+                                      ↓
+                               Response Processing & Redaction
+                                      ↓
+                               Return to User (Secure)
+```
+
 ## Contributing
 
-Feel free to fork this repository and submit pull requests for improvements or bug fixes.
+### How to Contribute
+
+1. **Fork the Repository**
+2. **Create a Feature Branch**: `git checkout -b feature/your-feature-name`
+3. **Make Your Changes**:
+   - Add tests for new functionality
+   - Follow existing code style and docstring conventions
+   - Ensure all tests pass
+4. **Commit Your Changes**: `git commit -m "Description of changes"`
+5. **Push to Your Fork**: `git push origin feature/your-feature-name`
+6. **Open a Pull Request**
+
+### Reporting Issues
+
+- Use GitHub Issues to report bugs
+- Include:
+  - Python version
+  - Operating system
+  - Steps to reproduce
+  - Expected vs. actual behavior
+  - Relevant error messages (with sensitive data redacted)
+
+### Code Review Process
+
+All pull requests are reviewed by:
+- **GitHub Copilot AI**: Automated code quality checks
+- **Sourcery AI**: Code improvement suggestions
+- **Gemini Code Assist**: Security and best practice analysis
+- **Maintainers**: Final human review
+
+## FAQ
+
+### Q: Do I need Raycast installed to use this?
+**A**: No! While the system can read Raycast configuration format, Raycast is completely optional.
+
+### Q: Is my API key safe?
+**A**: Yes. API keys are:
+- Never logged or printed
+- Never stored in configuration files
+- Only loaded from environment variables
+- Automatically redacted from all output
+
+### Q: What models support uncensored generation?
+**A**: Models with "uncensored" in their name, particularly:
+- `flux-dev-uncensored`
+- `lustify` (models)
+- Use `python qwen_cli_integrator.py venice list-models` to see all available models
+
+### Q: Can I use this with other AI providers?
+**A**: Yes! The `ExternalAPIIntegrator` supports any OpenAI-compatible API. Add your provider configuration in Raycast format.
 
 ## License
 
-MIT
+MIT License - see LICENSE file for details
+
+## Acknowledgments
+
+- GitKraken for their excellent CLI tool
+- Venice AI for uncensored AI capabilities
+- Contributors and testers
+
+## Support
+
+For questions, issues, or feature requests:
+- **GitHub Issues**: https://github.com/Fayeblade1488/Faye-Blade_Qwencode_venice_gitkraken/issues
+- **Discussions**: https://github.com/Fayeblade1488/Faye-Blade_Qwencode_venice_gitkraken/discussions

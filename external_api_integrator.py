@@ -230,7 +230,8 @@ class ExternalAPIIntegrator:
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            raise requests.RequestException(f"API request failed: {e}")
+            # Re-raise with additional context while preserving the original exception
+            raise ValueError(f"API request failed for provider '{provider_id}': {str(e)}") from e
     
     def list_all_models(self) -> Dict[str, List[Dict[str, Any]]]:
         """Lists all models from all loaded providers.
