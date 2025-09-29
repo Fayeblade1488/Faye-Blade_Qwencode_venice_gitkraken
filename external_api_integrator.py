@@ -121,9 +121,9 @@ class ExternalAPIIntegrator:
             is not found or has no models.
         """
         provider_info = self.get_provider_info(provider_id)
-        if provider_info and 'models' in provider_info:
-            return provider_info['models']
-        return []
+        if not provider_info or 'models' not in provider_info:
+            return []
+        return provider_info['models']
     
     def get_default_provider_api_key(self, provider_id: str) -> Optional[str]:
         """Gets the API key for a provider, with environment variable fallback.
