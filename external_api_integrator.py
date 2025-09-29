@@ -5,7 +5,6 @@ External API Integrator Module for Qwen CLI
 This module handles integration with external API providers like Venice.ai
 based on configurations from Raycast or other external sources.
 """
-
 import argparse
 import json
 import os
@@ -24,22 +23,22 @@ except ImportError:
 
 class ExternalAPIIntegrator:
     """Integrates with external AI providers using configuration files.
-
+    
     This class loads provider details, such as API endpoints and models, from
     a YAML configuration file (e.g., from Raycast). It provides methods to
     list available providers and models, and to perform chat completions
     using a specified provider.
-
+    
     Attributes:
         providers_config_path (Optional[str]): The path to the provider
             configuration YAML file.
         providers (Dict[str, Any]): A dictionary holding the configuration
             for all loaded providers, keyed by provider ID.
     """
-
+    
     def __init__(self, providers_config_path: Optional[str] = None):
         """Initializes the ExternalAPIIntegrator.
-
+        
         Args:
             providers_config_path: An optional path to the providers'
                 configuration file. If not provided, it will search in the
@@ -52,7 +51,7 @@ class ExternalAPIIntegrator:
     
     def _find_raycast_providers_config(self) -> Optional[str]:
         """Finds the Raycast providers configuration file in common locations.
-
+        
         Returns:
             The path to the configuration file if found, otherwise None.
         """
@@ -69,10 +68,10 @@ class ExternalAPIIntegrator:
     
     def load_providers_from_config(self) -> bool:
         """Loads provider configurations from the YAML file.
-
+        
         Parses the YAML file specified in `providers_config_path` and populates
         the `providers` dictionary.
-
+        
         Returns:
             True if providers were loaded successfully, False otherwise.
         """
@@ -82,215 +81,230 @@ class ExternalAPIIntegrator:
         try:
             with open(self.providers_config_path, 'r') as f:
                 config_data = yaml.safe_load(f)
-            
-            if 'providers' in config_data:
-                for provider in config_data['providers']:
-                    provider_id = provider.get('id')
-                    if provider_id:
-                        self.providers[provider_id] = provider
+                
+            if config_data and 'providers' in config_data:
+                # Convert list of providers to dict keyed by provider ID
+                if isinstance(config_data['providers'], list):
+                    for provider in config_data['providers']:
+                        provider_id = provider.get('id')
+                        if provider_id:
+                            self.providers[provider_id] = provider
+                elif isinstance(config_data['providers'], dict):
+                    self.providers = config_data['providers']
                 return True
-            else:
-                print(f"Warning: No 'providers' key found in {self.providers_config_path}", file=sys.stderr)
-                return False
         except Exception as e:
-            print(f"Error loading providers from config: {e}", file=sys.stderr)
-            return False
+            print(f"Error loading providers config: {e}", file=sys.stderr)
+        
+        return False
     
     def get_available_providers(self) -> List[str]:
-        """Gets a list of available provider IDs from the loaded configuration.
-
+        """Returns a list of available provider IDs.
+        
         Returns:
-            A list of strings, where each string is a provider ID.
+            A list of provider ID strings.
         """
         return list(self.providers.keys())
     
     def get_provider_info(self, provider_id: str) -> Optional[Dict[str, Any]]:
-        """Gets the configuration information for a specific provider.
-
+        """Gets detailed information about a specific provider.
+        
         Args:
             provider_id: The ID of the provider to retrieve information for.
-
+        
         Returns:
-            A dictionary containing the provider's configuration, or None if
-            the provider ID is not found.
+            A dictionary containing provider information, or None if the
+            provider is not found.
         """
         return self.providers.get(provider_id)
     
     def get_provider_models(self, provider_id: str) -> List[Dict[str, Any]]:
-        """Gets the list of models available for a specific provider.
-
+        """Gets available models for a specific provider.
+        
+        Args:
+            provider_id: The ID of the provider to retrieve models for.
+        
+        Returns:
+            A list of model dictionaries, or an empty list if the provider
+            is not found or has no models.
+        """
+        provider_info = self.get_provider_info(provider_id)
+        if provider_info and 'models' in provider_info:
+            return provider_info['models']
+        return []
+    
+    def get_default_provider_api_key(self, provider_id: str) -> Optional[str]:
+        """Gets the API key for a provider, with environment variable fallback.
+        
         Args:
             provider_id: The ID of the provider.
-
+        
         Returns:
-            A list of model dictionaries for the specified provider. Returns
-            an empty list if the provider is not found.
+            The API key string if found, otherwise None.
         """
         provider_info = self.get_provider_info(provider_id)
         if not provider_info:
-            return []
-        
-        return provider_info.get('models', [])
-    
-    def get_default_provider_api_key(self, provider_id: str) -> Optional[str]:
-        """Retrieves the API key for a provider from the configuration.
-
-        It prioritizes keys of type 'openai' but will return the first key
-        it finds. Note that keys may be placeholders that reference
-        environment variables (e.g., "${VENICE_API_KEY}").
-
-        Args:
-            provider_id: The ID of the provider.
-
-        Returns:
-            The API key string or placeholder, or None if not found.
-        """
-        provider_info = self.get_provider_info(provider_id)
-        if not provider_info or 'api_keys' not in provider_info:
             return None
         
-        # Get the first API key from the api_keys dict
-        api_keys = provider_info['api_keys']
-        for key_type, key_value in api_keys.items():
-            # If it's an OpenAI-compatible key, use it
-            if key_type == 'openai':
-                return key_value
-            # If there are multiple keys, return the first non-empty one
-            if key_value:
-                return key_value
+        # Try to get from provider config first
+        api_key = provider_info.get('api_key')
+        if api_key:
+            return api_key
+        
+        # Fallback to environment variable
+        env_var = provider_info.get('env_var')
+        if env_var:
+            return os.getenv(env_var)
         
         return None
     
-    def chat_completion(
-        self,
-        provider_id: str,
-        model_id: str,
-        messages: List[Dict[str, str]],
-        temperature: float = 0.7,
-        max_tokens: Optional[int] = None,
-        **kwargs
-    ) -> Dict[str, Any]:
-        """Performs a chat completion using a specified external provider.
-
-        This method constructs and sends a request to the provider's chat
-        completion endpoint and returns the response.
-
+    def chat_completion(self, provider_id: str, model_id: str, messages: List[Dict[str, str]], 
+                       temperature: float = 0.7, max_tokens: Optional[int] = None) -> Dict[str, Any]:
+        """Performs a chat completion using the specified provider and model.
+        
         Args:
-            provider_id: The ID of the provider to use (e.g., 'venice').
-            model_id: The ID of the model to use for the completion.
-            messages: A list of message dictionaries, following the standard
-                OpenAI format (e.g., `[{'role': 'user', 'content': '...'}]`).
-            temperature: The temperature for the generation (creativity).
-            max_tokens: The maximum number of tokens to generate.
-            **kwargs: Any other parameters to pass to the provider's API.
-
+            provider_id: The ID of the provider to use.
+            model_id: The ID of the model to use.
+            messages: A list of message dictionaries with 'role' and 'content' keys.
+            temperature: The temperature parameter for generation (default: 0.7).
+            max_tokens: The maximum number of tokens to generate (optional).
+        
         Returns:
-            A dictionary containing the API response. On success, this will
-            include the 'response' key with the provider's JSON response.
-            On failure, it will include an 'error' key with details.
+            A dictionary containing the completion result.
+        
+        Raises:
+            ValueError: If the provider or model is not found, or if no API key is available.
+            requests.RequestException: If the API request fails.
         """
         provider_info = self.get_provider_info(provider_id)
         if not provider_info:
-            return {
-                'success': False,
-                'error': f'Provider {provider_id} not found in configuration'
-            }
+            raise ValueError(f"Provider '{provider_id}' not found")
         
-        base_url = provider_info.get('base_url')
-        if not base_url:
-            return {
-                'success': False,
-                'error': f'No base_url found for provider {provider_id}'
-            }
+        # Find the model
+        models = self.get_provider_models(provider_id)
+        model_info = None
+        for model in models:
+            if model.get('id') == model_id:
+                model_info = model
+                break
+        
+        if not model_info:
+            raise ValueError(f"Model '{model_id}' not found for provider '{provider_id}'")
         
         # Get API key
-        api_key_placeholder = self.get_default_provider_api_key(provider_id)
-        if not api_key_placeholder:
-            return {
-                'success': False,
-                'error': f'No API key found for provider {provider_id}'
-            }
+        api_key = self.get_default_provider_api_key(provider_id)
+        if not api_key:
+            raise ValueError(f"No API key found for provider '{provider_id}'")
         
-        # Resolve API key from environment variable if it's a placeholder
-        if api_key_placeholder.startswith('${') and api_key_placeholder.endswith('}'):
-            env_var_name = api_key_placeholder[2:-1]
-            api_key = os.environ.get(env_var_name)
-            if not api_key:
-                return {
-                    'success': False,
-                    'error': f'Environment variable {env_var_name} for API key not set'
-                }
+        # Get API endpoint
+        api_endpoint = provider_info.get('endpoint')
+        if not api_endpoint:
+            raise ValueError(f"No API endpoint configured for provider '{provider_id}'")
+        
+        # Prepare headers with provider-specific auth format support
+        headers = {'Content-Type': 'application/json'}
+        
+        # Support provider-specific Authorization header formats
+        auth_header_format = provider_info.get('auth_header_format', 'Bearer {api_key}')
+        if auth_header_format:
+            headers['Authorization'] = auth_header_format.format(api_key=api_key)
         else:
-            api_key = api_key_placeholder
-
-        # Validate model exists
-        available_models = [m['id'] for m in self.get_provider_models(provider_id)]
-        if model_id not in available_models:
-            return {
-                'success': False,
-                'error': f'Model {model_id} not available for provider {provider_id}. Available: {available_models}'
-            }
+            headers['Authorization'] = f'Bearer {api_key}'
         
-        # Prepare the request
-        headers = {
-            'Authorization': f'Bearer {api_key}',
-            'Content-Type': 'application/json'
-        }
-        
-        data = {
+        # Prepare payload
+        payload = {
             'model': model_id,
             'messages': messages,
             'temperature': temperature
         }
         
         if max_tokens:
-            data['max_tokens'] = max_tokens
-        
-        # Add any additional parameters
-        for key, value in kwargs.items():
-            if value is not None:
-                data[key] = value
+            payload['max_tokens'] = max_tokens
         
         try:
-            # Make the request to the provider
-            response = requests.post(f"{base_url}/chat/completions", headers=headers, json=data, timeout=DEFAULT_REQUEST_TIMEOUT)
-            
-            if response.status_code == 200:
-                return {
-                    'success': True,
-                    'response': response.json()
-                }
-            else:
-                return {
-                    'success': False,
-                    'error': f'API request failed with status {response.status_code}: {response.text}'
-                }
-        except requests.exceptions.RequestException as e:
-            return {
-                'success': False,
-                'error': f'Request failed: {str(e)}'
-            }
-        except Exception as e:
-            return {
-                'success': False,
-                'error': f'Unexpected error: {str(e)}'
-            }
+            response = requests.post(
+                api_endpoint,
+                headers=headers,
+                json=payload,
+                timeout=30
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            raise requests.RequestException(f"API request failed: {e}")
     
     def list_all_models(self) -> Dict[str, List[Dict[str, Any]]]:
-        """Lists all models for all configured providers.
-
+        """Lists all models from all loaded providers.
+        
         Returns:
-            A dictionary mapping each provider ID to a list of its
-            available model dictionaries.
+            A dictionary mapping provider IDs to their respective model lists.
         """
         all_models = {}
-        for provider_id in self.providers:
-            all_models[provider_id] = self.get_provider_models(provider_id)
+        for provider_id in self.get_available_providers():
+            models = self.get_provider_models(provider_id)
+            all_models[provider_id] = models
         return all_models
 
 
-def main():
-    """Main function to test the ExternalAPIIntegrator."""
+def normalize_key(key: str) -> str:
+    """Normalize a key for sensitive comparison: lowercase, remove underscores and hyphens.
+    
+    Args:
+        key: The key string to normalize.
+    
+    Returns:
+        The normalized key string.
+    """
+    return key.lower().replace("_", "").replace("-", "")
+
+
+def redact_sensitive(data):
+    """
+    Recursively redact sensitive information from a (possibly nested) dict or list.
+    
+    This function traverses dictionaries and lists, identifying keys that contain
+    sensitive information (such as API keys, passwords, tokens) and replacing their
+    values with '***REDACTED***' to prevent accidental logging of secrets.
+    
+    Args:
+        data: The data structure to redact. Can be a dict, list, or any other type.
+    
+    Returns:
+        A new data structure with sensitive values redacted. Non-dict/list types
+        are returned unchanged.
+    
+    Examples:
+        >>> redact_sensitive({"api_key": "secret123", "name": "test"})
+        {"api_key": "***REDACTED***", "name": "test"}
+        >>> redact_sensitive({"Api-Key": "secret123"})
+        {"Api-Key": "***REDACTED***"}
+    """
+    SENSITIVE_KEYS = {"api_key", "api_keys", "password", "secret", "token", "access_token"}
+    NORMALIZED_SENSITIVE_KEYS = {normalize_key(k) for k in SENSITIVE_KEYS}
+    
+    if isinstance(data, dict):
+        return {
+            k: (
+                "***REDACTED***" if normalize_key(k) in NORMALIZED_SENSITIVE_KEYS
+                else redact_sensitive(v)
+            )
+            for k, v in data.items()
+        }
+    elif isinstance(data, list):
+        return [redact_sensitive(item) for item in data]
+    else:
+        return data
+
+
+def main() -> int:
+    """Main function for command-line usage.
+    
+    Returns:
+        Exit code: 0 for success, 1 for error.
+    """
+    if yaml is None:
+        print("Error: PyYAML is required for this functionality. Please install it with 'pip install PyYAML'", file=sys.stderr)
+        return 1
+    
     parser = argparse.ArgumentParser(description="External API Integrator for Qwen CLI")
     parser.add_argument(
         "--config-path",
@@ -352,18 +366,22 @@ def main():
             print("Error: --model is required when using --provider and --message", file=sys.stderr)
             return 1
         
-        # Format the message as a chat message
-        messages = [{"role": "user", "content": args.message}]
-        
-        # Call the chat completion
-        result = integrator.chat_completion(
-            provider_id=args.provider,
-            model_id=args.model,
-            messages=messages,
-            temperature=args.temperature
-        )
-        
-        print(json.dumps(result, indent=2))
+        try:
+            # Format the message as a chat message
+            messages = [{"role": "user", "content": args.message}]
+            
+            # Call the chat completion
+            result = integrator.chat_completion(
+                provider_id=args.provider,
+                model_id=args.model,
+                messages=messages,
+                temperature=args.temperature
+            )
+            
+            print(json.dumps(redact_sensitive(result), indent=2))
+        except (ValueError, requests.RequestException) as e:
+            print(f"Error: {e}", file=sys.stderr)
+            return 1
     
     else:
         parser.print_help()
