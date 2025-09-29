@@ -234,16 +234,21 @@ class ExternalAPIIntegrator:
         return all_models
 
 
+def normalize_key(key: str) -> str:
+    """Normalize a key for sensitive comparison: lowercase, remove underscores and hyphens."""
+    return key.lower().replace("_", "").replace("-", "")
+
 def redact_sensitive(data):
     """
     Recursively redact sensitive information from a (possibly nested) dict or list.
-    Sensitive keys: api_key, api_keys, password, secret
+    Sensitive keys: api_key, api_keys, password, secret, token, access_token
     """
     SENSITIVE_KEYS = {"api_key", "api_keys", "password", "secret", "token", "access_token"}
+    NORMALIZED_SENSITIVE_KEYS = {normalize_key(k) for k in SENSITIVE_KEYS}
     if isinstance(data, dict):
         return {
             k: (
-                "***REDACTED***" if k.lower() in SENSITIVE_KEYS
+                "***REDACTED***" if normalize_key(k) in NORMALIZED_SENSITIVE_KEYS
                 else redact_sensitive(v)
             )
             for k, v in data.items()
