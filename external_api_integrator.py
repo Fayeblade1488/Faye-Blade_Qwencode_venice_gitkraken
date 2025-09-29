@@ -243,7 +243,7 @@ def redact_sensitive(data):
     Recursively redact sensitive information from a (possibly nested) dict or list.
     Sensitive keys: api_key, api_keys, password, secret, token, access_token
     """
-    SENSITIVE_KEYS = {"api_key", "api_keys", "password", "secret", "token", "access_token"}
+        SENSITIVE_KEYS = {"api_key", "api_keys", "password", "secret", "token", "access_token"}
     NORMALIZED_SENSITIVE_KEYS = {normalize_key(k) for k in SENSITIVE_KEYS}
     if isinstance(data, dict):
         return {
