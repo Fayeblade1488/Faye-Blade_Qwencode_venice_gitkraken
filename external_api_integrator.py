@@ -239,7 +239,10 @@ def normalize_key(key: str) -> str:
     return key.lower().replace("_", "").replace("-", "")
 
 # Sensitive keys and their normalized forms for redaction
-SENSITIVE_KEYS = {"api_key", "api_keys", "password", "secret", "token", "access_token"}
+SENSITIVE_KEYS = {
+    "api_key", "api_keys", "password", "secret", "token", "access_token",
+    "authorization", "bearer", "client_secret", "private_key", "refresh_token"
+}
 NORMALIZED_SENSITIVE_KEYS = {normalize_key(k) for k in SENSITIVE_KEYS}
 
 def redact_sensitive(data):
