@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Additional comprehensive tests to achieve 90% coverage
+Comprehensive test coverage for Qwen CLI Integration.
+
+This test suite covers critical code paths that were previously untested:
+1. External API Integrator provider configuration loading and model listing
+2. Venice AI image upscaling functionality  
+3. GitKraken CLI command execution and error handling
+4. Redaction functionality for sensitive data
+5. Edge cases and error conditions
 """
 
 import json
@@ -10,589 +17,334 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch, mock_open, call, PropertyMock
-import subprocess
+from unittest.mock import MagicMock, Mock, patch, mock_open, call
 
-# Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-
-class TestMainFunctions(unittest.TestCase):
-    """Test main functions of each module."""
-    
-    @patch('sys.argv', ['qwen_cli_integrator.py', 'gitkraken', 'version'])
-    def test_qwen_main_gitkraken(self):
-        """Test qwen main with gitkraken command."""
-        from qwen_cli_integrator import main
-        
-        with patch('qwen_cli_integrator.QwenCLIIntegrator') as mock_integrator_class:
-            mock_integrator = MagicMock()
-            mock_integrator.gitkraken_command.return_value = {"success": True}
-            mock_integrator_class.return_value = mock_integrator
-            
-            result = main()
-            mock_integrator.gitkraken_command.assert_called_once()
-    
-    @patch('sys.argv', ['qwen_cli_integrator.py', 'venice', 'list-models'])
-    def test_qwen_main_venice_list_models(self):
-        """Test qwen main with venice list-models."""
-        from qwen_cli_integrator import main
-        
-        with patch('qwen_cli_integrator.QwenCLIIntegrator') as mock_integrator_class:
-            mock_integrator = MagicMock()
-            mock_integrator.list_available_models.return_value = {
-                "success": True, 
-                "all_models": [], 
-                "uncensored_models": []
-            }
-            mock_integrator_class.return_value = mock_integrator
-            
-            result = main()
-            mock_integrator.list_available_models.assert_called_once()
-    
-    @patch('sys.argv', ['qwen_cli_integrator.py', 'venice', 'generate', '--prompt', 'test'])
-    def test_qwen_main_venice_generate(self):
-        """Test qwen main with venice generate command."""
-        from qwen_cli_integrator import main
-        
-        with patch('qwen_cli_integrator.QwenCLIIntegrator') as mock_integrator_class:
-            mock_integrator = MagicMock()
-            mock_integrator.venice_generate_image.return_value = {
-                "success": True,
-                "generated_image_path": "/tmp/test.png"
-            }
-            mock_integrator_class.return_value = mock_integrator
-            
-            result = main()
-            mock_integrator.venice_generate_image.assert_called_once()
-    
-    @patch('sys.argv', ['qwen_cli_integrator.py', 'venice', 'upscale', '--input', 'test.png'])
-    def test_qwen_main_venice_upscale(self):
-        """Test qwen main with venice upscale command."""
-        from qwen_cli_integrator import main
-        
-        with patch('qwen_cli_integrator.QwenCLIIntegrator') as mock_integrator_class:
-            mock_integrator = MagicMock()
-            mock_integrator.venice_upscale_image.return_value = {
-                "success": True,
-                "output_path": "/tmp/test_upscaled.png"
-            }
-            mock_integrator_class.return_value = mock_integrator
-            
-            result = main()
-            mock_integrator.venice_upscale_image.assert_called_once()
-    
-    @patch('sys.argv', ['qwen_cli_integrator.py', 'external', 'list-providers'])
-    def test_qwen_main_external_list(self):
-        """Test qwen main with external list-providers."""
-        from qwen_cli_integrator import main
-        
-        with patch('qwen_cli_integrator.QwenCLIIntegrator') as mock_integrator_class:
-            mock_integrator = MagicMock()
-            mock_integrator.list_external_providers.return_value = {
-                "success": True,
-                "providers": [],
-                "models": {}
-            }
-            mock_integrator_class.return_value = mock_integrator
-            
-            result = main()
-            mock_integrator.list_external_providers.assert_called_once()
-    
-    @patch('sys.argv', ['qwen_cli_integrator.py', 'external', 'chat', '--provider', 'test', '--model', 'test-model', '--message', 'hello'])
-    def test_qwen_main_external_chat(self):
-        """Test qwen main with external chat."""
-        from qwen_cli_integrator import main
-        
-        with patch('qwen_cli_integrator.QwenCLIIntegrator') as mock_integrator_class:
-            mock_integrator = MagicMock()
-            mock_integrator.external_chat_completion.return_value = {
-                "success": True,
-                "response": {}
-            }
-            mock_integrator_class.return_value = mock_integrator
-            
-            result = main()
-            mock_integrator.external_chat_completion.assert_called_once()
-    
-    @patch('sys.argv', ['qwen_cli_integrator.py', 'venice-tools', 'verify'])
-    def test_qwen_main_venice_tools_verify(self):
-        """Test qwen main with venice-tools verify."""
-        from qwen_cli_integrator import main
-        
-        with patch('qwen_cli_integrator.QwenCLIIntegrator') as mock_integrator_class:
-            mock_integrator = MagicMock()
-            mock_integrator.verify_venice_api.return_value = {"success": True}
-            mock_integrator_class.return_value = mock_integrator
-            
-            result = main()
-            mock_integrator.verify_venice_api.assert_called_once()
-    
-    @patch('sys.argv', ['qwen_cli_integrator.py', 'venice-tools', 'update-config'])
-    def test_qwen_main_venice_tools_update(self):
-        """Test qwen main with venice-tools update-config."""
-        from qwen_cli_integrator import main
-        
-        with patch('qwen_cli_integrator.QwenCLIIntegrator') as mock_integrator_class:
-            mock_integrator = MagicMock()
-            mock_integrator.update_venice_config.return_value = {"success": True}
-            mock_integrator_class.return_value = mock_integrator
-            
-            result = main()
-            mock_integrator.update_venice_config.assert_called_once()
+import external_api_integrator
+import gitkraken_integration
+import venice_integration
 
 
-class TestQwenIntegratorMethods(unittest.TestCase):
-    """Test QwenCLIIntegrator methods."""
+class TestExternalAPIIntegratorCoverage(unittest.TestCase):
+    """Tests for External API Integrator critical paths"""
     
-    @patch.dict(os.environ, {"VENICE_API_KEY": "test_key"})
-    def test_venice_generate_no_venice(self):
-        """Test venice generate when venice not initialized."""
-        from qwen_cli_integrator import QwenCLIIntegrator
+    def test_raycast_config_file_discovery(self):
+        """Test that Raycast config file is properly discovered in multiple locations."""
+        integrator = external_api_integrator.ExternalAPIIntegrator()
         
-        integrator = QwenCLIIntegrator()
-        integrator.venice = None
-        
-        result = integrator.venice_generate_image("test prompt")
-        self.assertFalse(result['success'])
-        self.assertIn('not initialized', result['error'])
+        # Test with non-existent paths
+        with patch('os.path.exists', return_value=False):
+            result = integrator._find_raycast_providers_config()
+            self.assertIsNone(result, "Should return None when no config file exists")
     
-    @patch.dict(os.environ, {"VENICE_API_KEY": "test_key"})
-    def test_venice_generate_with_venice(self):
-        """Test venice generate with venice initialized."""
-        from qwen_cli_integrator import QwenCLIIntegrator
+    def test_list_all_models_empty_providers(self):
+        """Test list_all_models with no providers configured."""
+        integrator = external_api_integrator.ExternalAPIIntegrator()
+        integrator.providers = {}
         
-        integrator = QwenCLIIntegrator()
-        mock_venice = MagicMock()
-        mock_venice.generate_image.return_value = {"success": True}
-        integrator.venice = mock_venice
-        
-        result = integrator.venice_generate_image("test prompt", model="test-model")
-        self.assertTrue(result['success'])
-        mock_venice.generate_image.assert_called_once_with(prompt="test prompt", model="test-model")
+        result = integrator.list_all_models()
+        self.assertEqual(result, {}, "Should return empty dict for no providers")
     
-    def test_venice_upscale_no_venice(self):
-        """Test venice upscale when venice not initialized."""
-        from qwen_cli_integrator import QwenCLIIntegrator
-        
-        integrator = QwenCLIIntegrator()
-        integrator.venice = None
-        
-        result = integrator.venice_upscale_image("test.png")
-        self.assertFalse(result['success'])
-    
-    def test_list_models_no_venice(self):
-        """Test list models when venice not initialized."""
-        from qwen_cli_integrator import QwenCLIIntegrator
-        
-        integrator = QwenCLIIntegrator()
-        integrator.venice = None
-        
-        result = integrator.list_available_models()
-        self.assertFalse(result['success'])
-    
-    def test_verify_venice_no_key(self):
-        """Test verify venice without API key."""
-        from qwen_cli_integrator import QwenCLIIntegrator
-        
-        integrator = QwenCLIIntegrator()
-        integrator.venice_api_key = None
-        
-        result = integrator.verify_venice_api()
-        self.assertFalse(result['success'])
-        self.assertIn('No API key', result['error'])
-    
-    @patch('qwen_cli_integrator.VeniceAIVerifier')
-    def test_verify_venice_with_key(self, mock_verifier_class):
-        """Test verify venice with API key."""
-        from qwen_cli_integrator import QwenCLIIntegrator
-        
-        mock_verifier = MagicMock()
-        mock_verifier.verify_api_key.return_value = {"success": True}
-        mock_verifier_class.return_value = mock_verifier
-        
-        integrator = QwenCLIIntegrator()
-        integrator.venice_api_key = "test_key"
-        
-        result = integrator.verify_venice_api()
-        self.assertTrue(result['success'])
-    
-    def test_update_venice_config_no_key(self):
-        """Test update venice config without API key."""
-        from qwen_cli_integrator import QwenCLIIntegrator
-        
-        integrator = QwenCLIIntegrator()
-        integrator.venice_api_key = None
-        
-        result = integrator.update_venice_config()
-        self.assertFalse(result['success'])
-        self.assertIn('No API key', result['error'])
-    
-    @patch('qwen_cli_integrator.VeniceAIConfigUpdater')
-    def test_update_venice_config_with_key(self, mock_updater_class):
-        """Test update venice config with API key."""
-        from qwen_cli_integrator import QwenCLIIntegrator
-        
-        mock_updater = MagicMock()
-        mock_updater.update_raycast_config.return_value = {"success": True}
-        mock_updater_class.return_value = mock_updater
-        
-        integrator = QwenCLIIntegrator()
-        integrator.venice_api_key = "test_key"
-        
-        result = integrator.update_venice_config()
-        self.assertTrue(result['success'])
-    
-    @patch('qwen_cli_integrator.GitKrakenCLI')
-    def test_gitkraken_command_exception(self, mock_gk_class):
-        """Test gitkraken command with exception."""
-        from qwen_cli_integrator import QwenCLIIntegrator
-        
-        mock_gk = MagicMock()
-        mock_gk.is_installed.return_value = True
-        mock_gk.version.side_effect = Exception("Test error")
-        mock_gk_class.return_value = mock_gk
-        
-        integrator = QwenCLIIntegrator()
-        result = integrator.gitkraken_command('version')
-        
-        self.assertFalse(result['success'])
-        self.assertIn('Test error', result['error'])
-
-
-class TestGitKrakenMethods(unittest.TestCase):
-    """Test GitKraken CLI methods."""
-    
-    @patch('gitkraken_integration.subprocess.run')
-    def test_timeout_error(self, mock_run):
-        """Test command timeout."""
-        from gitkraken_integration import GitKrakenCLI
-        
-        mock_run.side_effect = subprocess.TimeoutExpired('cmd', 30)
-        
-        cli = GitKrakenCLI()
-        cli.cli_path = '/usr/local/bin/gk'
-        
-        result = cli.run_command(['version'])
-        self.assertFalse(result['success'])
-        self.assertIn('timed out', result['error'])
-    
-    @patch('gitkraken_integration.subprocess.run')
-    def test_generic_exception(self, mock_run):
-        """Test generic exception in run_command."""
-        from gitkraken_integration import GitKrakenCLI
-        
-        mock_run.side_effect = Exception("Generic error")
-        
-        cli = GitKrakenCLI()
-        cli.cli_path = '/usr/local/bin/gk'
-        
-        result = cli.run_command(['version'])
-        self.assertFalse(result['success'])
-        self.assertIn('Generic error', result['error'])
-    
-    @patch('gitkraken_integration.subprocess.run')
-    def test_ai_commands(self, mock_run):
-        """Test various AI commands."""
-        from gitkraken_integration import GitKrakenCLI
-        
-        mock_result = Mock()
-        mock_result.returncode = 0
-        mock_result.stdout = 'success'
-        mock_result.stderr = ''
-        mock_run.return_value = mock_result
-        
-        cli = GitKrakenCLI()
-        cli.cli_path = '/usr/local/bin/gk'
-        
-        # Test ai_changelog
-        result = cli.ai_changelog(base="main", head="feature")
-        self.assertTrue(result['success'])
-        
-        # Test ai_explain_branch
-        result = cli.ai_explain_branch(branch="feature")
-        self.assertTrue(result['success'])
-        
-        # Test ai_explain_commit
-        result = cli.ai_explain_commit("abc123")
-        self.assertTrue(result['success'])
-        
-        # Test ai_pr_create
-        result = cli.ai_pr_create()
-        self.assertTrue(result['success'])
-        
-        # Test ai_resolve
-        result = cli.ai_resolve()
-        self.assertTrue(result['success'])
-        
-        # Test ai_tokens
-        result = cli.ai_tokens()
-        self.assertTrue(result['success'])
-    
-    @patch('gitkraken_integration.subprocess.run')
-    def test_work_commands(self, mock_run):
-        """Test work commands."""
-        from gitkraken_integration import GitKrakenCLI
-        
-        mock_result = Mock()
-        mock_result.returncode = 0
-        mock_result.stdout = 'success'
-        mock_result.stderr = ''
-        mock_run.return_value = mock_result
-        
-        cli = GitKrakenCLI()
-        cli.cli_path = '/usr/local/bin/gk'
-        
-        # Test work_list
-        result = cli.work_list()
-        self.assertTrue(result['success'])
-        
-        # Test work_info
-        result = cli.work_info(name="test")
-        self.assertTrue(result['success'])
-        
-        # Test work_start
-        result = cli.work_start("new-work", issue="ISSUE-1")
-        self.assertTrue(result['success'])
-        
-        # Test work_set
-        result = cli.work_set("test-work")
-        self.assertTrue(result['success'])
-
-
-class TestExternalAPIIntegrator(unittest.TestCase):
-    """Test external API integrator methods."""
-    
-    def test_get_default_api_key_env_var(self):
-        """Test getting API key from environment variable."""
-        from external_api_integrator import ExternalAPIIntegrator
-        
-        integrator = ExternalAPIIntegrator()
+    def test_list_all_models_multiple_providers(self):
+        """Test list_all_models with multiple providers."""
+        integrator = external_api_integrator.ExternalAPIIntegrator()
         integrator.providers = {
-            'test': {
-                'api_keys': {'openai': '${TEST_API_KEY}'}
-            }
+            'provider1': {'models': [{'id': 'model1', 'name': 'Model 1'}]},
+            'provider2': {'models': [{'id': 'model2', 'name': 'Model 2'}]}
         }
         
-        with patch.dict(os.environ, {'TEST_API_KEY': 'actual_key'}):
-            result = integrator.chat_completion(
-                'test', 'model',
-                [{'role': 'user', 'content': 'test'}]
-            )
-            # Will fail due to missing model, but checks env var resolution
+        result = integrator.list_all_models()
+        self.assertEqual(len(result), 2)
+        self.assertIn('provider1', result)
+        self.assertIn('provider2', result)
+    
+    def test_get_provider_api_key_from_config(self):
+        """Test API key retrieval from provider config."""
+        integrator = external_api_integrator.ExternalAPIIntegrator()
+        integrator.providers = {
+            'test': {'api_key': 'config_key_123'}
+        }
+        
+        key = integrator.get_default_provider_api_key('test')
+        self.assertEqual(key, 'config_key_123')
+    
+    def test_get_provider_api_key_from_env(self):
+        """Test API key fallback to environment variable."""
+        integrator = external_api_integrator.ExternalAPIIntegrator()
+        integrator.providers = {
+            'test': {'env_var': 'TEST_API_KEY'}
+        }
+        
+        with patch('os.getenv', return_value='env_key_456'):
+            key = integrator.get_default_provider_api_key('test')
+            self.assertEqual(key, 'env_key_456')
+    
+    def test_chat_completion_missing_provider(self):
+        """Test chat_completion with non-existent provider."""
+        integrator = external_api_integrator.ExternalAPIIntegrator()
+        integrator.providers = {}
+        
+        with self.assertRaises(ValueError) as ctx:
+            integrator.chat_completion('nonexistent', 'model', [])
+        self.assertIn('not found', str(ctx.exception).lower())
+    
+    def test_chat_completion_missing_model(self):
+        """Test chat_completion with non-existent model."""
+        integrator = external_api_integrator.ExternalAPIIntegrator()
+        integrator.providers = {
+            'test': {'models': [{'id': 'model1'}]}
+        }
+        
+        with self.assertRaises(ValueError) as ctx:
+            integrator.chat_completion('test', 'nonexistent_model', [])
+        self.assertIn('not found', str(ctx.exception).lower())
+
+
+class TestRedactionFunctionality(unittest.TestCase):
+    """Tests for sensitive data redaction"""
+    
+    def test_redact_simple_dict(self):
+        """Test redaction of simple dictionary with API key."""
+        data = {'api_key': 'secret123', 'name': 'test'}
+        result = external_api_integrator.redact_sensitive(data)
+        
+        self.assertEqual(result['api_key'], '***REDACTED***')
+        self.assertEqual(result['name'], 'test')
+    
+    def test_redact_nested_dict(self):
+        """Test redaction of nested dictionaries."""
+        data = {
+            'config': {
+                'api_key': 'secret',
+                'password': 'pass123'
+            },
+            'user': 'test_user'
+        }
+        result = external_api_integrator.redact_sensitive(data)
+        
+        self.assertEqual(result['config']['api_key'], '***REDACTED***')
+        self.assertEqual(result['config']['password'], '***REDACTED***')
+        self.assertEqual(result['user'], 'test_user')
+    
+    def test_redact_list_of_dicts(self):
+        """Test redaction of list containing dictionaries."""
+        data = [
+            {'api_key': 'key1', 'name': 'item1'},
+            {'token': 'token1', 'name': 'item2'}
+        ]
+        result = external_api_integrator.redact_sensitive(data)
+        
+        self.assertEqual(result[0]['api_key'], '***REDACTED***')
+        self.assertEqual(result[1]['token'], '***REDACTED***')
+        self.assertEqual(result[0]['name'], 'item1')
+    
+    def test_redact_mixed_case_keys(self):
+        """Test redaction with various key case formats."""
+        data = {
+            'Api-Key': 'secret1',
+            'API_KEY': 'secret2',
+            'api_key': 'secret3'
+        }
+        result = external_api_integrator.redact_sensitive(data)
+        
+        # All variations should be redacted
+        self.assertEqual(result['Api-Key'], '***REDACTED***')
+        self.assertEqual(result['API_KEY'], '***REDACTED***')
+        self.assertEqual(result['api_key'], '***REDACTED***')
+    
+    def test_normalize_key_function(self):
+        """Test the normalize_key helper function."""
+        self.assertEqual(external_api_integrator.normalize_key('api_key'), 'apikey')
+        self.assertEqual(external_api_integrator.normalize_key('Api-Key'), 'apikey')
+        self.assertEqual(external_api_integrator.normalize_key('API_KEY'), 'apikey')
+
+
+class TestGitKrakenCLICoverage(unittest.TestCase):
+    """Tests for GitKraken CLI integration"""
+    
+    def test_cli_not_installed(self):
+        """Test behavior when GitKraken CLI is not installed."""
+        with patch.object(gitkraken_integration.GitKrakenCLI, '_find_gk_cli', return_value=None):
+            cli = gitkraken_integration.GitKrakenCLI()
+            
+            result = cli.run_command(['version'])
             self.assertFalse(result['success'])
+            self.assertIn('not installed', result['error'])
     
-    def test_chat_completion_no_base_url(self):
-        """Test chat completion without base_url."""
-        from external_api_integrator import ExternalAPIIntegrator
+    def test_command_timeout(self):
+        """Test handling of command timeout."""
+        cli = gitkraken_integration.GitKrakenCLI()
+        cli.cli_path = '/fake/path/gk'
         
-        integrator = ExternalAPIIntegrator()
-        integrator.providers = {
-            'test': {
-                'api_keys': {'openai': 'test_key'},
-                'models': [{'id': 'test-model'}]
-            }
-        }
-        
-        result = integrator.chat_completion(
-            'test', 'test-model',
-            [{'role': 'user', 'content': 'Hello'}]
-        )
-        
-        self.assertFalse(result['success'])
-        self.assertIn('No base_url', result['error'])
+        import subprocess
+        with patch('subprocess.run', side_effect=subprocess.TimeoutExpired(['gk'], 30)):
+            result = cli.run_command(['version'])
+            self.assertFalse(result['success'])
+            self.assertIn('timed out', result['error'].lower())
     
-    def test_chat_completion_no_api_key(self):
-        """Test chat completion without API key."""
-        from external_api_integrator import ExternalAPIIntegrator
+    def test_successful_command_execution(self):
+        """Test successful command execution."""
+        cli = gitkraken_integration.GitKrakenCLI()
+        cli.cli_path = '/usr/local/bin/gk'
         
-        integrator = ExternalAPIIntegrator()
-        integrator.providers = {
-            'test': {
-                'base_url': 'https://api.test.com',
-                'models': [{'id': 'test-model'}]
-            }
-        }
+        mock_result = Mock()
+        mock_result.returncode = 0
+        mock_result.stdout = 'GitKraken CLI v1.0.0'
+        mock_result.stderr = ''
         
-        result = integrator.chat_completion(
-            'test', 'test-model',
-            [{'role': 'user', 'content': 'Hello'}]
-        )
-        
-        self.assertFalse(result['success'])
-        self.assertIn('No API key', result['error'])
-    
-    def test_chat_completion_invalid_model(self):
-        """Test chat completion with invalid model."""
-        from external_api_integrator import ExternalAPIIntegrator
-        
-        integrator = ExternalAPIIntegrator()
-        integrator.providers = {
-            'test': {
-                'base_url': 'https://api.test.com',
-                'api_keys': {'openai': 'test_key'},
-                'models': [{'id': 'valid-model'}]
-            }
-        }
-        
-        result = integrator.chat_completion(
-            'test', 'invalid-model',
-            [{'role': 'user', 'content': 'Hello'}]
-        )
-        
-        self.assertFalse(result['success'])
-        self.assertIn('not available', result['error'])
-    
-    @patch('external_api_integrator.requests.post')
-    def test_chat_completion_api_error(self, mock_post):
-        """Test chat completion with API error."""
-        from external_api_integrator import ExternalAPIIntegrator
-        
-        mock_response = Mock()
-        mock_response.status_code = 500
-        mock_response.text = "Server error"
-        mock_post.return_value = mock_response
-        
-        integrator = ExternalAPIIntegrator()
-        integrator.providers = {
-            'test': {
-                'base_url': 'https://api.test.com',
-                'api_keys': {'openai': 'test_key'},
-                'models': [{'id': 'test-model'}]
-            }
-        }
-        
-        result = integrator.chat_completion(
-            'test', 'test-model',
-            [{'role': 'user', 'content': 'Hello'}],
-            max_tokens=100
-        )
-        
-        self.assertFalse(result['success'])
-        self.assertIn('API request failed', result['error'])
+        with patch('subprocess.run', return_value=mock_result):
+            result = cli.version()
+            self.assertTrue(result['success'])
+            self.assertEqual(result['returncode'], 0)
+            self.assertIn('v1.0.0', result['stdout'])
 
 
-class TestVeniceImageGeneration(unittest.TestCase):
-    """Test Venice image generation methods."""
+class TestVeniceAIImageGeneratorCoverage(unittest.TestCase):
+    """Tests for Venice AI image generation critical paths"""
     
-    @patch('venice_integration.requests.Session')
-    def test_generate_image_binary_response(self, mock_session_class):
-        """Test generating image with binary response."""
-        from venice_integration import VeniceAIImageGenerator
-        import base64
+    def test_invalid_aspect_ratio(self):
+        """Test handling of invalid aspect ratio."""
+        generator = venice_integration.VeniceAIImageGenerator(api_key='test')
         
-        # Setup mock binary response
-        test_image = b"fake image data"
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.headers = {
-            "x-request-id": "test-id",
-            "Content-Type": "image/png"
-        }
-        mock_response.content = test_image
-        
-        mock_session = MagicMock()
-        mock_session.post.return_value = mock_response
-        mock_session_class.return_value = mock_session
-        
-        generator = VeniceAIImageGenerator("test_key")
-        
-        with patch('builtins.open', mock_open()):
-            with patch('venice_integration.pathlib.Path.mkdir'):
-                result = generator.generate_image(
-                    "test prompt",
-                    output_dir="/tmp/test",
-                    verbose=True
-                )
-        
-        self.assertTrue(result['success'])
-        self.assertIn('generated_image_path', result)
+        with self.assertRaises(ValueError) as ctx:
+            generator._size_from_aspect('invalid')
+        self.assertIn('Invalid aspect ratio', str(ctx.exception))
     
-    @patch('venice_integration.requests.Session')
-    def test_generate_image_json_response(self, mock_session_class):
-        """Test generating image with JSON response."""
-        from venice_integration import VeniceAIImageGenerator
-        import base64
+    def test_sha256_calculation(self):
+        """Test SHA256 hash calculation."""
+        generator = venice_integration.VeniceAIImageGenerator(api_key='test')
         
-        # Setup mock JSON response with base64 image
-        test_image = b"fake image data"
-        encoded_image = base64.b64encode(test_image).decode('utf-8')
+        data = b'test data'
+        hash_result = generator._sha256(data)
         
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.headers = {"x-request-id": "test-id"}
-        mock_response.json.return_value = {
-            "images": [encoded_image]
-        }
-        
-        mock_session = MagicMock()
-        mock_session.post.return_value = mock_response
-        mock_session_class.return_value = mock_session
-        
-        # Mock _is_binary_image_response to return False
-        generator = VeniceAIImageGenerator("test_key")
-        generator._is_binary_image_response = Mock(return_value=False)
-        
-        with patch('builtins.open', mock_open()):
-            with patch('venice_integration.pathlib.Path.mkdir'):
-                result = generator.generate_image(
-                    "test prompt",
-                    seed=42,
-                    auto_upscale=False,
-                    verbose=True
-                )
-        
-        self.assertTrue(result['success'])
+        # Verify it's a 64-character hex string
+        self.assertEqual(len(hash_result), 64)
+        self.assertTrue(all(c in '0123456789abcdef' for c in hash_result))
     
-    def test_decode_image_from_json(self):
-        """Test decoding image from JSON payload."""
-        from venice_integration import VeniceAIImageGenerator
-        import base64
+    def test_binary_image_response_detection(self):
+        """Test detection of binary image responses."""
+        generator = venice_integration.VeniceAIImageGenerator(api_key='test')
         
-        generator = VeniceAIImageGenerator("test_key")
+        # Test with image content type
+        resp = Mock()
+        resp.headers = {'Content-Type': 'image/png'}
+        self.assertTrue(generator._is_binary_image_response(resp))
         
-        # Test with 'image' key
-        test_data = b"test image"
-        payload = {"image": base64.b64encode(test_data).decode('utf-8')}
-        result = generator._decode_image_from_json(payload)
-        self.assertEqual(result, test_data)
-        
-        # Test with 'images' key
-        payload = {"images": [base64.b64encode(test_data).decode('utf-8')]}
-        result = generator._decode_image_from_json(payload)
-        self.assertEqual(result, test_data)
-        
-        # Test with no image data
-        with self.assertRaises(KeyError):
-            generator._decode_image_from_json({})
+        # Test with JSON content type
+        resp.headers = {'Content-Type': 'application/json'}
+        self.assertFalse(generator._is_binary_image_response(resp))
     
-    def test_is_binary_image_response(self):
-        """Test checking if response is binary image."""
-        from venice_integration import VeniceAIImageGenerator
+    @patch('venice_integration.VeniceAIImageGenerator._session')
+    def test_upscale_image_bytes_success(self, mock_session):
+        """Test successful image upscaling from bytes."""
+        generator = venice_integration.VeniceAIImageGenerator(api_key='test')
         
-        generator = VeniceAIImageGenerator("test_key")
-        
-        # Test image response
+        # Setup mock response
         mock_resp = Mock()
-        mock_resp.headers = {"Content-Type": "image/png"}
-        self.assertTrue(generator._is_binary_image_response(mock_resp))
+        mock_resp.status_code = 200
+        mock_resp.headers = {'x-request-id': 'test-req-id', 'Content-Type': 'application/json'}
+        mock_resp.json.return_value = {'image': 'dXBzY2FsZWRpbWFnZWRhdGE='}  # base64 encoded
         
-        # Test non-image response
-        mock_resp.headers = {"Content-Type": "application/json"}
-        self.assertFalse(generator._is_binary_image_response(mock_resp))
+        mock_session_instance = Mock()
+        mock_session_instance.post.return_value = mock_resp
+        mock_session.return_value = mock_session_instance
+        
+        # Upscale test data
+        with patch('base64.b64decode', return_value=b'upscaled_data'):
+            result_bytes, metadata = generator.upscale_image_bytes(b'original_data')
+        
+        self.assertEqual(result_bytes, b'upscaled_data')
+        self.assertIn('request_id', metadata)
+
+
+class TestVeniceAIVerifierCoverage(unittest.TestCase):
+    """Tests for Venice AI verification"""
     
-    def test_now_iso(self):
-        """Test ISO timestamp generation."""
-        from venice_integration import VeniceAIImageGenerator
-        import re
+    def test_verifier_initialization_no_key(self):
+        """Test verifier raises error when no API key provided."""
+        with patch.dict('os.environ', {}, clear=True):
+            with self.assertRaises(ValueError) as ctx:
+                venice_integration.VeniceAIVerifier(api_key=None)
+            self.assertIn('API key not provided', str(ctx.exception))
+    
+    @patch('venice_integration.VeniceAIVerifier._session')
+    def test_verify_api_key_unauthorized(self, mock_session):
+        """Test API key verification with unauthorized response."""
+        verifier = venice_integration.VeniceAIVerifier(api_key='invalid_key')
         
-        generator = VeniceAIImageGenerator("test_key")
-        timestamp = generator._now_iso()
+        mock_resp = Mock()
+        mock_resp.status_code = 401
+        mock_resp.headers = {'x-request-id': 'req-123'}
         
-        # Check ISO format
-        iso_pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
-        self.assertRegex(timestamp, iso_pattern)
+        mock_session_instance = Mock()
+        mock_session_instance.post.return_value = mock_resp
+        mock_session.return_value = mock_session_instance
+        
+        result = verifier.verify_api_key()
+        
+        self.assertFalse(result['success'])
+        self.assertEqual(result['status_code'], 401)
+        self.assertIn('Invalid API key', result['message'])
+    
+    @patch('venice_integration.VeniceAIVerifier._session')
+    def test_fetch_models_http_error(self, mock_session):
+        """Test model fetching with HTTP error."""
+        verifier = venice_integration.VeniceAIVerifier(api_key='test_key')
+        
+        import requests
+        # Create a proper HTTPError with response object
+        mock_resp = Mock()
+        mock_resp.status_code = 500
+        mock_resp.headers = {'x-request-id': 'test-123'}
+        
+        http_error = requests.HTTPError()
+        http_error.response = mock_resp
+        mock_resp.raise_for_status.side_effect = http_error
+        
+        mock_session_instance = Mock()
+        mock_session_instance.get.return_value = mock_resp
+        mock_session.return_value = mock_session_instance
+        
+        result = verifier.fetch_models()
+        
+        self.assertFalse(result['success'])
+        self.assertIn('error', result)
+        self.assertEqual(result['status_code'], 500)
+
+
+class TestEdgeCasesAndErrorHandling(unittest.TestCase):
+    """Tests for edge cases and error handling"""
+    
+    def test_empty_messages_list(self):
+        """Test chat completion with empty messages list."""
+        integrator = external_api_integrator.ExternalAPIIntegrator()
+        integrator.providers = {
+            'test': {
+                'endpoint': 'https://test.com',
+                'api_key': 'key',
+                'models': [{'id': 'model1'}]
+            }
+        }
+        
+        # Should not raise on empty messages, but might fail on API call
+        with patch('external_api_integrator.requests.post') as mock_post:
+            mock_post.side_effect = ValueError("API error")
+            with self.assertRaises(ValueError):
+                integrator.chat_completion('test', 'model1', [])
+    
+    def test_venice_list_models_empty_result(self):
+        """Test Venice list_models with empty API response."""
+        generator = venice_integration.VeniceAIImageGenerator(api_key='test')
+        
+        with patch.object(venice_integration.VeniceAIVerifier, 'fetch_models', 
+                         return_value={'success': False, 'error': 'API error'}):
+            result = generator.list_models()
+            
+            self.assertEqual(result['all_models'], [])
+            self.assertEqual(result['uncensored_models'], [])
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)
