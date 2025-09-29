@@ -1,41 +1,8 @@
-# 🚀 Qwen CLI Integration: GitKraken & Venice AI 🎨
-<img width="1536" height="1024" alt="image2 copy" src="https://github.com/user-attachments/assets/a23c49db-d0b8-4468-aa5a-a85e1b3ab0f3" />
+# Qwen Code Integration: GitKraken CLI & Venice AI
 
-```
-╔══════════════════════════════════════════════════════════════════════╗
-║                          Qwen CLI Integrator                         ║
-║                GitKraken + Venice AI + External APIs                 ║
-║                                                                      ║
-║  🔐 Secure API Key Management     🧠 AI-Powered Workflows            ║
-║  🖼️ Uncensored Image Generation   📡 Real-time Model Updates         ║
-║  ⚡ Auto-Configuration             🛡️ Security-First Approach         ║
-╚══════════════════════════════════════════════════════════════════════╝
-```
-
-## Table of Contents
-- [Overview](#overview)
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [API Endpoints](#api-endpoints)
-- [Security Considerations](#security-considerations)
-- [Quick Start Guide](QUICKSTART_GUIDE.md) 
-- [Troubleshooting](#troubleshooting)
-- [Development](#development)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-This repository provides a comprehensive integration between Qwen CLI and powerful tools:
-
-1. **GitKraken CLI**: A complete, AI-powered Git workflow enhancement suite that allows for seamless Git operations with AI assistance
-2. **Venice AI Integration**: An uncensored AI system that provides both image generation and chat capabilities
-3. **External API Integration**: Support for multiple AI providers including Venice AI, with config loading from Raycast format
-
-The integration is designed to work within the Qwen CLI ecosystem, allowing users to leverage advanced Git workflows and AI-powered services directly from their command line. **Note: While the system can read provider configurations from Raycast's format, Raycast is NOT required for usage.**
+This package provides integration between Qwen Code and two powerful tools:
+- **GitKraken CLI**: AI-powered Git workflow enhancement
+- **Venice AI**: Uncensored image generation and upscaling
 
 ## Features
 
