@@ -83,7 +83,7 @@ class ExternalAPIIntegrator:
                 config_data = yaml.safe_load(f)
                 
             if config_data and 'providers' in config_data:
-                self.providers = config_data['providers']
+                self.providers = {p['id']: p for p in config_data['providers'] if 'id' in p}
                 return True
         except Exception as e:
             print(f"Error loading providers config: {e}", file=sys.stderr)
