@@ -55,18 +55,15 @@ id_rsa
 id_rsa.pub
 config.json
 
-# User data
-*.csv
-*.json
-*.xml
-*.txt
+# User data and generated content
 generated/
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.webp
-*.bmp
+generated_images/
+output/
+*.generated.*
+
+# Test artifacts
+test_output/
+test_results/
 
 # Build outputs
 *.egg-info/

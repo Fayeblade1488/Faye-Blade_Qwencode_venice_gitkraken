@@ -1,5 +1,14 @@
 # 🚀 Qwen CLI Integration: GitKraken & Venice AI 🎨
-<img width="1536" height="1024" alt="image2 copy" src="https://github.com/user-attachments/assets/a23c49db-d0b8-4468-aa5a-a85e1b3ab0f3" />
+
+<div align="center">
+
+[![Python Version](https://img.shields.io/badge/python-3.7%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/Fayeblade1488/Faye-Blade_Qwencode_venice_gitkraken?style=social)](https://github.com/Fayeblade1488/Faye-Blade_Qwencode_venice_gitkraken/stargazers)
+[![GitHub Issues](https://img.shields.io/github/issues/Fayeblade1488/Faye-Blade_Qwencode_venice_gitkraken)](https://github.com/Fayeblade1488/Faye-Blade_Qwencode_venice_gitkraken/issues)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+<img width="1536" height="1024" alt="Qwen CLI Integration Banner" src="https://github.com/user-attachments/assets/a23c49db-d0b8-4468-aa5a-a85e1b3ab0f3" />
 
 ```
 ╔══════════════════════════════════════════════════════════════════════╗
@@ -12,22 +21,30 @@
 ╚══════════════════════════════════════════════════════════════════════╝
 ```
 
-## Table of Contents
-- [Overview](#overview)
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [API Endpoints](#api-endpoints)
-- [Security Considerations](#security-considerations)
-- [Quick Start Guide](QUICKSTART_GUIDE.md) 
-- [Troubleshooting](#troubleshooting)
-- [Development](#development)
-- [Contributing](#contributing)
-- [License](#license)
+**A unified CLI tool integrating GitKraken, Venice AI image generation, and external API providers**
 
-## Overview
+[Features](#-features) •
+[Installation](#-installation) •
+[Quick Start](#-quick-start) •
+[Documentation](#-documentation) •
+[Contributing](#-contributing)
+
+</div>
+
+---
+
+## 📋 Table of Contents
+
+- [✨ Features](#-features)
+- [🔧 Prerequisites](#-prerequisites)
+- [📦 Installation](#-installation)
+- [🚀 Quick Start](#-quick-start)
+- [📚 Documentation](#-documentation)
+- [🔒 Security](#-security)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+
+## 📖 Overview
 
 This repository provides a comprehensive integration between Qwen CLI and powerful tools:
 
@@ -37,42 +54,68 @@ This repository provides a comprehensive integration between Qwen CLI and powerf
 
 The integration is designed to work within the Qwen CLI ecosystem, allowing users to leverage advanced Git workflows and AI-powered services directly from their command line. **Note: While the system can read provider configurations from Raycast's format, Raycast is NOT required for usage.**
 
-## Features
+## ✨ Features
 
-### GitKraken CLI Integration
-- Full command-line access to GitKraken's features
-- AI-powered commit generation, conflict resolution, and PR creation
-- Workspace and issue management
-- Authentication and provider token management
+### 🎯 GitKraken CLI Integration
+- 🤖 **AI-Powered Git Operations**: Automated commit messages, conflict resolution, and PR creation
+- 📊 **Workspace Management**: Organize and manage multiple repositories
+- 🔄 **Issue Tracking**: Seamlessly integrate with issue management systems
+- 🔑 **Authentication**: Secure provider token management
 
-### Venice AI Integration
-- Uncensored image generation using models like `lustify-sdxl`
-- Image upscaling with enhancement capabilities
-- Support for various aspect ratios and formats
-- Automatic upscaling of generated images
+### 🖼️ Venice AI Integration  
+- 🎨 **Uncensored Image Generation**: Using `lustify-sdxl` model (default: 50 steps)
+- ⬆️ **Image Upscaling**: 4x enhancement with quality preservation
+- 📐 **Flexible Aspect Ratios**: Square, tall, and wide formats supported
+- ⚡ **Automatic Processing**: Optional auto-upscale after generation
 
-## Prerequisites
+### 🔌 External API Support
+- 📡 **Multi-Provider**: Support for various AI API providers
+- 🔄 **Config Auto-Update**: Automatic Raycast configuration synchronization
+- 🛠️ **Extensible**: Easy integration of new providers
 
-1. GitKraken CLI installed on your system
-2. Venice AI API key for image generation
-3. Python 3.7+
+## 🔧 Prerequisites
 
-## Installation
+- **Python 3.7+** (3.11+ recommended)
+- **GitKraken CLI** (optional, for Git operations)
+- **Venice AI API Key** (required for image generation)
 
-1. Clone or download this repository
-2. Install Python dependencies:
+### System Requirements
+- **OS**: macOS, Linux, or Windows
+- **Memory**: 2GB+ RAM recommended
+- **Storage**: 100MB+ for dependencies
+
+## 📦 Installation
+
+### Quick Install
 
 ```bash
+# Clone the repository
+git clone https://github.com/Fayeblade1488/Faye-Blade_Qwencode_venice_gitkraken.git
+cd Faye-Blade_Qwencode_venice_gitkraken
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Set up your Venice API key
+export VENICE_API_KEY="your_api_key_here"
+
+# Verify installation
+python qwen_cli_integrator.py --help
 ```
 
-3. Set up your Venice API key:
+### Alternative Installation (Development)
 
 ```bash
-export VENICE_API_KEY="your_api_key_here"
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install with dev dependencies
+pip install -r requirements.txt
+pip install pytest flake8 black  # Optional dev tools
 ```
 
-## Usage
+## 🚀 Quick Start
 
 ### Command Line Interface
 
@@ -250,14 +293,52 @@ This project follows:
 - **Type hints** where applicable
 - **Security-first approach**: API keys are never logged or stored in configs
 
-### Security Features
+## 📚 Documentation
 
-- **Sensitive Data Redaction**: All API responses containing API keys, tokens, passwords are automatically redacted before logging
-- **Environment Variable Only**: API keys must be provided via environment variables, never in code or config files
-- **Secure Retry Logic**: Built-in retry mechanisms with exponential backoff for API calls
-- **Timeout Protection**: All API calls have connection and read timeouts to prevent hanging
+Comprehensive documentation is available:
 
-## Architecture
+- **[🚀 Quick Start Guide](QUICKSTART_GUIDE.md)** - Get started in minutes
+- **[🤖 Agent Guide](AGENT_GUIDE.md)** - For AI CLI agents and automation
+- **[🔒 Security Policy](SECURITY.md)** - Security best practices and reporting
+- **[🤝 Contributing Guide](CONTRIBUTING.md)** - How to contribute
+- **[🛡️ Code of Conduct](CODE_OF_CONDUCT.md)** - Community standards
+
+### API Documentation
+
+All modules are fully documented with docstrings:
+
+```python
+# View help for any module
+import venice_integration
+help(venice_integration.VeniceAIImageGenerator)
+```
+
+## 🔒 Security
+
+### 🔑 API Key Management
+- ❌ **Never** commit API keys to version control
+- ✅ **Always** use environment variables (`VENICE_API_KEY`)
+- 🔒 Keys are automatically redacted from all logs and output
+- 🔄 Rotate keys regularly
+
+### 🛡️ Network Security
+- All requests use **HTTPS** with TLS 1.2+
+- Automatic retry with exponential backoff
+- Connection and read timeout protection
+- Secure session management
+
+### 🔍 Vulnerability Reporting
+- See [SECURITY.md](SECURITY.md) for reporting guidelines
+- Response within 48 hours
+- Regular dependency updates via Dependabot
+
+### ⚠️ Content Safety
+This tool provides access to **uncensored image generation**. Users are responsible for:
+- Complying with local laws and regulations
+- Using the tool in appropriate contexts
+- Understanding Venice AI's terms of service
+
+## 🛠️ Architecture
 
 ### Component Overview
 
@@ -299,71 +380,133 @@ User Command → qwen_cli_integrator.py → Specific Integration Module → Exte
                                Return to User (Secure)
 ```
 
-## Contributing
+## 🤝 Contributing
 
-### How to Contribute
+We welcome contributions from the community! 🎉
 
-1. **Fork the Repository**
-2. **Create a Feature Branch**: `git checkout -b feature/your-feature-name`
-3. **Make Your Changes**:
-   - Add tests for new functionality
-   - Follow existing code style and docstring conventions
-   - Ensure all tests pass
-4. **Commit Your Changes**: `git commit -m "Description of changes"`
-5. **Push to Your Fork**: `git push origin feature/your-feature-name`
-6. **Open a Pull Request**
+### Quick Contribution Guide
+
+1. 🍴 **Fork the Repository**
+2. 🌱 **Create a Feature Branch**: `git checkout -b feature/amazing-feature`
+3. ✨ **Make Your Changes**:
+   - Write tests for new functionality
+   - Follow PEP 8 and project coding standards
+   - Add docstrings to all functions
+   - Ensure all tests pass: `pytest tests/`
+4. 📝 **Commit**: Use [conventional commits](https://www.conventionalcommits.org/)
+   ```bash
+   git commit -m "feat: add new image generation parameter"
+   git commit -m "fix: resolve API timeout issue"
+   git commit -m "docs: update installation instructions"
+   ```
+5. 🚀 **Push**: `git push origin feature/amazing-feature`
+6. 🎯 **Open a Pull Request**
+
+### Development Setup
+
+```bash
+# Fork and clone
+git clone https://github.com/YOUR_USERNAME/Faye-Blade_Qwencode_venice_gitkraken.git
+cd Faye-Blade_Qwencode_venice_gitkraken
+
+# Install dev dependencies
+pip install -r requirements.txt
+pip install pytest flake8 black isort
+
+# Run tests
+pytest tests/ -v
+
+# Format code
+black --line-length 120 .
+isort --profile black .
+```
 
 ### Reporting Issues
 
-- Use GitHub Issues to report bugs
-- Include:
-  - Python version
-  - Operating system
-  - Steps to reproduce
-  - Expected vs. actual behavior
-  - Relevant error messages (with sensitive data redacted)
+Found a bug? 🐞
+- Use [GitHub Issues](https://github.com/Fayeblade1488/Faye-Blade_Qwencode_venice_gitkraken/issues)
+- Use issue templates provided
+- Include: OS, Python version, steps to reproduce, error messages
+- Redact any sensitive information (API keys, personal data)
 
-### Code Review Process
+### Code of Conduct
 
-All pull requests are reviewed by:
-- **GitHub Copilot AI**: Automated code quality checks
-- **Sourcery AI**: Code improvement suggestions
-- **Gemini Code Assist**: Security and best practice analysis
-- **Maintainers**: Final human review
+Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## FAQ
+For detailed contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-### Q: Do I need Raycast installed to use this?
-**A**: No! While the system can read Raycast configuration format, Raycast is completely optional.
+## ❓ FAQ
 
-### Q: Is my API key safe?
-**A**: Yes. API keys are:
-- Never logged or printed
-- Never stored in configuration files
-- Only loaded from environment variables
-- Automatically redacted from all output
+<details>
+<summary><b>Do I need Raycast installed to use this?</b></summary>
+No! While the system can read Raycast configuration format, Raycast is completely optional.
+</details>
 
-### Q: What models support uncensored generation?
-**A**: Models with "uncensored" in their name, particularly:
-- `lustify-sdxl`
-- `lustify` (models)
-- Use `python qwen_cli_integrator.py venice list-models` to see all available models
+<details>
+<summary><b>Is my API key safe?</b></summary>
+Yes. API keys are:
+<ul>
+<li>Never logged or printed</li>
+<li>Never stored in configuration files</li>
+<li>Only loaded from environment variables</li>
+<li>Automatically redacted from all output</li>
+</ul>
+</details>
 
-### Q: Can I use this with other AI providers?
-**A**: Yes! The `ExternalAPIIntegrator` supports any OpenAI-compatible API. Add your provider configuration in Raycast format.
+<details>
+<summary><b>What models support uncensored generation?</b></summary>
+The default model is <code>lustify-sdxl</code>. Use <code>python qwen_cli_integrator.py venice list-models</code> to see all available models.
+</details>
 
-## License
+<details>
+<summary><b>Can I use this with other AI providers?</b></summary>
+Yes! The <code>ExternalAPIIntegrator</code> supports any OpenAI-compatible API. Add your provider configuration in Raycast format.
+</details>
 
-MIT License - see LICENSE file for details
+<details>
+<summary><b>How do I troubleshoot installation issues?</b></summary>
+See the <a href="QUICKSTART_GUIDE.md">Quick Start Guide</a> for detailed troubleshooting steps.
+</details>
 
-## Acknowledgments
+## 📝 License
 
-- GitKraken for their excellent CLI tool
-- Venice AI for uncensored AI capabilities
-- Contributors and testers
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
-## Support
+### What this means:
+✅ Commercial use  
+✅ Modification  
+✅ Distribution  
+✅ Private use  
+⚠️ No liability  
+⚠️ No warranty  
 
-For questions, issues, or feature requests:
-- **GitHub Issues**: https://github.com/Fayeblade1488/Faye-Blade_Qwencode_venice_gitkraken/issues
-- **Discussions**: https://github.com/Fayeblade1488/Faye-Blade_Qwencode_venice_gitkraken/discussions
+## 🚀 Roadmap
+
+- [ ] Add support for more Venice AI models
+- [ ] Implement batch image generation
+- [ ] Add video generation capabilities
+- [ ] Create web UI interface
+- [ ] Docker container support
+- [ ] CI/CD pipeline enhancements
+
+## 👏 Acknowledgments
+
+- [GitKraken](https://www.gitkraken.com/) for their excellent CLI tool
+- [Venice AI](https://venice.ai/) for uncensored AI capabilities
+- All [contributors](https://github.com/Fayeblade1488/Faye-Blade_Qwencode_venice_gitkraken/graphs/contributors)
+
+## 📞 Support
+
+- 🐞 **Bug Reports**: [GitHub Issues](https://github.com/Fayeblade1488/Faye-Blade_Qwencode_venice_gitkraken/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/Fayeblade1488/Faye-Blade_Qwencode_venice_gitkraken/discussions)
+- 📧 **Security**: See [SECURITY.md](SECURITY.md)
+
+---
+
+<div align="center">
+
+**[⬆ Back to Top](#-qwen-cli-integration-gitkraken--venice-ai-)**
+
+Made with ❤️ by [Faye Blade](https://github.com/Fayeblade1488)
+
+</div>
