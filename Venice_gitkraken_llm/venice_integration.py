@@ -38,8 +38,8 @@ class VeniceAIImageGenerator:
         self.upscale_endpoint = f"{self.base_url}/image/upscale"
         
         # Default settings for uncensored generation
-        self.default_model = "flux-dev-uncensored"  # Uncensored model
-        self.default_steps = 30  # Appropriate for uncensored model
+        self.default_model = "lustify-sdxl"  # Uncensored model
+        self.default_steps = 50  # Appropriate for lustify-sdxl model
         self.default_cfg = 5.0
         self.default_negative = ""  # Empty negative prompt for uncensored results
         self.default_safe_mode = False  # Disable safe mode for uncensored generation
@@ -502,7 +502,7 @@ class VeniceAIImageGenerator:
     def get_uncensored_models(self) -> List[Dict[str, Any]]:
         """Get only the uncensored models from Venice API."""
         all_models = self.list_models()
-        uncensored_keywords = ["uncensored", "flux-dev", "lustify"]
+        uncensored_keywords = ["uncensored", "lustify", "lustify-sdxl"]
         
         uncensored_models = []
         for model in all_models:
@@ -521,7 +521,7 @@ if __name__ == "__main__":
     # This would be run as a command line tool
     parser = argparse.ArgumentParser(description="Venice AI Image Generator with Uncensored Capabilities")
     parser.add_argument("--prompt", type=str, required=True, help="Prompt for image generation")
-    parser.add_argument("--model", type=str, default="flux-dev-uncensored", help="Model to use for generation")
+    parser.add_argument("--model", type=str, default="lustify-sdxl", help="Model to use for generation")
     parser.add_argument("--aspect-ratio", type=str, default="tall", choices=["square", "tall", "wide"], help="Aspect ratio for output")
     parser.add_argument("--output-dir", type=str, default="generated", help="Directory for outputs")
     parser.add_argument("--output-name", type=str, help="Base output filename")

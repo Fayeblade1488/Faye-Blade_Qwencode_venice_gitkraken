@@ -279,7 +279,7 @@ def main():
     # Image generation command
     gen_parser = venice_subparsers.add_parser("generate", help="Generate an image")
     gen_parser.add_argument("--prompt", type=str, required=True, help="Prompt for image generation")
-    gen_parser.add_argument("--model", type=str, default="flux-dev-uncensored", help="Model to use")
+    gen_parser.add_argument("--model", type=str, default="lustify-sdxl", help="Model to use")
     gen_parser.add_argument("--aspect-ratio", type=str, default="tall", choices=["square", "tall", "wide"], 
                             help="Aspect ratio for output")
     gen_parser.add_argument("--output-dir", type=str, default="generated", help="Output directory")

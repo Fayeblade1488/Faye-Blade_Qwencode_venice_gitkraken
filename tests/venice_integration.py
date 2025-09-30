@@ -697,8 +697,8 @@ class VeniceAIImageGenerator:
                 "prompt": prompt,
                 "model": model,
                 "aspect_ratio": aspect_ratio,
-                "width": w,  # Store actual resolved width
-                "height": h,  # Store actual resolved height
+                "width": width,
+                "height": height,
                 "steps": steps,
                 "cfg_scale": cfg_scale,
                 "negative_prompt": negative_prompt,
@@ -959,10 +959,20 @@ def main():
             verifier = VeniceAIVerifier(api_key)
             result = verifier.verify_api_key()
             print(json.dumps(result, indent=2))
-        
-        elif args.update_config:
+
+            group = parser.add_mutually_exclusive_group()
+            group.add_argument(
+                "--verify",
+                action="store_true",
+                help="Verify the Venice AI API key.",
+            )
+            group.add_argument(
+                "--update-config",
+                action="store_true",
+                help="Update the Raycast configuration with the latest Venice AI models.",
+            )
             updater = VeniceAIConfigUpdater(api_key)
-            result = updater.update_raycast_config()
+            result = updater.update_raycast_config()  # correct usage; takes no arguments
             print(json.dumps(result, indent=2))
         
         elif args.list_models:

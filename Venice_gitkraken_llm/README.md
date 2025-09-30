@@ -13,7 +13,7 @@ This package provides integration between Qwen Code and two powerful tools:
 - Authentication and provider token management
 
 ### Venice AI Integration
-- Uncensored image generation using models like `flux-dev-uncensored`
+- Uncensored image generation using models like `lustify-sdxl`
 - Image upscaling with enhancement capabilities
 - Support for various aspect ratios and formats
 - Automatic upscaling of generated images
@@ -77,8 +77,8 @@ Generate an image with specific parameters:
 ```bash
 python qwen_cli_integrator.py venice generate \
   --prompt "cyberpunk cityscape" \
-  --model flux-dev-uncensored \
-  --aspect-ratio wide \
+  --model lustify-sdxl \
+  --aspect-ratio wide
   --steps 30 \
   --cfg-scale 7.0 \
   --upscale
@@ -110,7 +110,7 @@ print(result)
 # Venice example
 result = integrator.venice_generate_image(
     prompt="abstract art with vibrant colors",
-    model="flux-dev-uncensored",
+    model="lustify-sdxl",
     upscale=True
 )
 print(result)
