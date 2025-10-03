@@ -14,12 +14,8 @@ from typing import Any, Dict, Optional
 
 # Import our integration modules
 from gitkraken_integration import GitKrakenCLI
-<<<<<<< Updated upstream
 from venice_integration import VeniceAIImageGenerator, VeniceAIVerifier, VeniceAIConfigUpdater
 from external_api_integrator import ExternalAPIIntegrator
-=======
-from venice_integration import VeniceAIImageGenerator
->>>>>>> Stashed changes
 
 
 class QwenCLIIntegrator:
@@ -245,7 +241,6 @@ class QwenCLIIntegrator:
                 'success': False,
                 'error': str(e)
             }
-<<<<<<< Updated upstream
     
     def external_chat_completion(self, provider_id: str, model_id: str, messages: list, **kwargs) -> Dict[str, Any]:
         """Performs a chat completion using an external API provider.
